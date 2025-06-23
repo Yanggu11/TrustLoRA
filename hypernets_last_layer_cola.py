@@ -4,7 +4,29 @@ import evaluate
 import torch
 from torch import nn
 from transformers import RobertaTokenizer, RobertaModel, RobertaForSequenceClassification, Trainer, TrainingArguments
+from transformers.modeling_outputs import SequenceClassifierOutput
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+model_name = "roberta-base"
+
+tokenizer = RobertaTokenizer.from_pretrained(model_name)
+
+def tokenize_function(examples):
+    return tokenizer(examples["sentence"], truncation=True, padding="max_length", max_length=512)
+
+dataset = load_dataset("glue", "cola")
+
+encoded_dataset = dataset.map(tokenize_function, batched=True)
+encoded_dataset = encoded_dataset.rename_column("label", "labels")
+encoded_dataset.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
+
+metric = evaluate.load("glue", "cola")
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
 
 # --- Custom LoRA Layer ---
 class DynamicLoRALayer(nn.Module):
@@ -35,8 +57,7 @@ class DynamicLoRALayer(nn.Module):
         # Apply low-rank adapter: x + (x @ B.T @ A)
         lora_out = torch.matmul(torch.matmul(x, B.T), A)
         return x + lora_out
-
-
+    
 # --- Hypernetwork: A -> B ---
 class LoRAHyperNet(nn.Module):
     def __init__(self, input_dim, hidden_dim, lora_dim):
@@ -50,11 +71,10 @@ class LoRAHyperNet(nn.Module):
         B = self.fc2(h).view(A.size(1), A.size(0))  # B shape: [in_dim, r]
         return B
 
-
-# --- Modified Roberta with custom LoRA ---
 class RobertaWithDynamicLoRA(RobertaForSequenceClassification):
     def __init__(self, config, lora_r=8, hypernet_hidden_dim=512):
         super().__init__(config)
+        self.config.output_hidden_states = True 
         self.hidden_size = config.hidden_size
         self.lora_r = lora_r
 
@@ -64,83 +84,89 @@ class RobertaWithDynamicLoRA(RobertaForSequenceClassification):
 
         # Inject after the last layer's output dense
         self.output_dense = self.roberta.encoder.layer[-1].output.dense
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
     def forward(self, input_ids=None, attention_mask=None, labels=None):
-        outputs = super().forward(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+        outputs = self.roberta(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=True,
+            return_dict=True
+        )
 
-        # Use last hidden state from last layer for LoRA modification
-        hidden_states = self.roberta.encoder.layer[-1].output.dense(outputs.hidden_states[-1])
-        adapted_output = self.lora(hidden_states)
+        hidden_states = outputs.hidden_states[-1]  # [batch, seq_len, hidden_dim]
+        _, _, hidden_dim = hidden_states.shape
 
-        logits = self.classifier(self.dropout(adapted_output[:, 0]))
+        if self.training:
+            # Sample A from normal distribution per step
+            A = torch.randn((self.lora_r, hidden_dim), device=hidden_states.device)
+        else:
+            # For evaluation use fixed A LoRA matrix
+            A = self.lora.A_fixed
 
-        # Replace original logits with adapted version
-        return {"logits": logits, "loss": outputs.loss} if labels is not None else {"logits": logits}
+        B = self.hypernet(A)  # [d_model, r]
+        lora_weight = torch.matmul(B, A)  # [d_model, d_model]
+
+        # Apply LoRA adaptation
+        adapted_hidden = hidden_states + torch.matmul(hidden_states, lora_weight.T)
+
+        # Use [CLS] token for classification
+        cls_output = adapted_hidden[:, 0]  # [batch, hidden]
+        logits = self.dropout(cls_output)
+        logits = self.classifier.out_proj(logits)  
+
+        loss = None
+        if labels is not None:
+            loss_fn = torch.nn.CrossEntropyLoss()
+            loss = loss_fn(logits, labels)
+
+        return {"logits": logits, "loss": loss} if loss is not None else {"logits": logits}
 
 
+base_model = RobertaWithDynamicLoRA.from_pretrained(model_name)
 
-# --- Training loop (preserving your structure) ---
-for it in range(3):
-    print(f"====== Run {it} ===============")
-    model_name = "roberta-base"
-    tokenizer = RobertaTokenizer.from_pretrained(model_name)
-    base_model = RobertaWithDynamicLoRA.from_pretrained(model_name)
+total_params = sum(p.numel() for p in base_model.parameters())
+trainable_params = sum(p.numel() for p in base_model.parameters() if p.requires_grad)
+print(f"Total parameters: {total_params:,}")
+print(f"Trainable parameters: {trainable_params:,}")
 
-    total_params = sum(p.numel() for p in base_model.parameters())
-    trainable_params = sum(p.numel() for p in base_model.parameters() if p.requires_grad)
-    print(f"Total parameters: {total_params:,}")
-    print(f"Trainable parameters: {trainable_params:,}")
+training_args = TrainingArguments(
+    output_dir="./outputs/reoberta_base_cola",
+    eval_strategy="epoch",
+    # eval_steps=25,
+    save_strategy="steps",
+    save_steps=1000000,
+    learning_rate=4e-4,
+    per_device_train_batch_size=16, # 16
+    gradient_accumulation_steps=2, # 2
+    per_device_eval_batch_size=32,
+    num_train_epochs=80,
+    logging_dir="./logs/roberta_base_cola",
+    metric_for_best_model="matthews_correlation",
+    dataloader_num_workers=4,
+    warmup_ratio=0.06,
+    lr_scheduler_type="linear",
+    optim="adamw_torch",
+    disable_tqdm=True,
+    # remove_unused_columns=False
+)
 
-    # Load and tokenize CoLA
-    dataset = load_dataset("glue", "cola")
+from transformers import Trainer
 
-    def tokenize_function(examples):
-        return tokenizer(examples["sentence"], truncation=True, padding="max_length", max_length=512)
+class CustomTrainer(Trainer):
+    def evaluate(self, *args, **kwargs):
+        # Put your LoRA modules into eval mode before evaluation
+        self.model.lora.set_eval_mode()
+        
+        return super().evaluate(*args, **kwargs)
 
-    encoded_dataset = dataset.map(tokenize_function, batched=True)
-    encoded_dataset = encoded_dataset.rename_column("label", "labels")
-    encoded_dataset.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
+trainer = CustomTrainer(
+    model=base_model,
+    args=training_args,
+    train_dataset=encoded_dataset["train"],
+    eval_dataset=encoded_dataset["validation"],
+    tokenizer=tokenizer,
+    compute_metrics=compute_metrics,
+)
 
-    metric = evaluate.load("glue", "cola")
-
-    def compute_metrics(eval_pred):
-        logits, labels = eval_pred
-        predictions = np.argmax(logits, axis=-1)
-        return metric.compute(predictions=predictions, references=labels)
-
-    training_args = TrainingArguments(
-        output_dir="./outputs/roberta_base_cola",
-        eval_strategy="epoch",
-        save_strategy="steps",
-        save_steps=1000000,
-        learning_rate=4e-4,
-        per_device_train_batch_size=16,
-        gradient_accumulation_steps=2,
-        per_device_eval_batch_size=32,
-        num_train_epochs=80,
-        logging_dir="./logs/roberta_base_cola",
-        metric_for_best_model="matthews_correlation",
-        dataloader_num_workers=4,
-        warmup_ratio=0.06,
-        lr_scheduler_type="linear",
-        optim="adamw_torch",
-        disable_tqdm=True,
-        # remove_unused_columns=False
-    )
-
-    # Set evaluation mode hook
-    def model_init():
-        model = RobertaWithDynamicLoRA.from_pretrained(model_name)
-        model.lora.set_eval_mode()
-        return model
-
-    trainer = Trainer(
-        model=base_model,
-        args=training_args,
-        train_dataset=encoded_dataset["train"],
-        eval_dataset=encoded_dataset["validation"],
-        tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
-    )
-
-    trainer.train()
+trainer.train()
