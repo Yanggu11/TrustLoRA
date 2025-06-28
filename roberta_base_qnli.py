@@ -4,6 +4,8 @@ import evaluate
 from peft import get_peft_model, LoraConfig, TaskType
 from transformers import RobertaTokenizer, RobertaForSequenceClassification, Trainer, TrainingArguments
 
+print("Roberta_base_QNLI")
+
 for it in range(3):
     print(f"====== Run {it} ===============")
     
@@ -15,7 +17,7 @@ for it in range(3):
         task_type=TaskType.SEQ_CLS,
         inference_mode=False,
         r=8,
-        lora_alpha=8
+        lora_alpha=16
     )
     model = get_peft_model(base_model, peft_config)
 
@@ -58,6 +60,7 @@ for it in range(3):
         metric_for_best_model="accuracy",  # QNLI uses accuracy metric primarily
         dataloader_num_workers=4,
         warmup_ratio=0.06,
+        weight_decay=0.1,
         lr_scheduler_type="linear",
         optim="adamw_torch",
         disable_tqdm=True

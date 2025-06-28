@@ -4,6 +4,8 @@ import evaluate
 from peft import get_peft_model, LoraConfig, TaskType, PeftModel, PeftConfig
 from transformers import RobertaTokenizer, RobertaForSequenceClassification, Trainer, TrainingArguments\
     
+print("Roberta_base_CoLA")
+
 for it in range(3):
     print(f"====== Run {it} ===============")
     #* Init finetuning using peft 
@@ -17,7 +19,7 @@ for it in range(3):
         task_type=TaskType.SEQ_CLS,
         inference_mode=False,
         r=8,
-        lora_alpha=8
+        lora_alpha=16
     )
     model = get_peft_model(base_model, peft_config)
 
@@ -66,6 +68,7 @@ for it in range(3):
         warmup_ratio=0.06,
         lr_scheduler_type="linear",
         optim="adamw_torch",
+        weight_decay=0.1,
         disable_tqdm=True
     )
 

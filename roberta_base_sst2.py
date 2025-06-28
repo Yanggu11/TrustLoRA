@@ -4,6 +4,8 @@ import evaluate
 from peft import get_peft_model, LoraConfig, TaskType
 from transformers import RobertaTokenizer, RobertaForSequenceClassification, Trainer, TrainingArguments
 
+print("Roberta base SST-2")
+
 for it in range(3):
     print(f"====== Run {it} ===============")
 
@@ -53,6 +55,7 @@ for it in range(3):
         save_strategy="steps",
         save_steps=1000000,  # Effectively disables checkpoint saving
         learning_rate=5e-4,
+        weight_decay=0.1,
         per_device_train_batch_size=16,
         gradient_accumulation_steps=1,
         per_device_eval_batch_size=32,
