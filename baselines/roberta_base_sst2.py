@@ -19,7 +19,7 @@ for it in range(3):
         task_type=TaskType.SEQ_CLS,
         inference_mode=False,
         r=8,
-        lora_alpha=8
+        lora_alpha=16
     )
     model = get_peft_model(base_model, peft_config)
 
