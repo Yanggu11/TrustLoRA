@@ -6,7 +6,7 @@ from transformers import RobertaTokenizer, RobertaForSequenceClassification, Tra
     
 print("Roberta_base_CoLA")
 
-for it in range(3):
+for it in range(1):
     print(f"====== Run {it} ===============")
     #* Init finetuning using peft 
 
@@ -18,7 +18,7 @@ for it in range(3):
     peft_config = LoraConfig(
         task_type=TaskType.SEQ_CLS,
         inference_mode=False,
-        r=8,
+        r=1,
         lora_alpha=16
     )
     model = get_peft_model(base_model, peft_config)
