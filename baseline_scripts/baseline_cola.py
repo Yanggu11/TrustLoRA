@@ -8,9 +8,9 @@ from transformers import RobertaTokenizer, RobertaForSequenceClassification, Tra
 
 from evaluation.metrices import compute_ece
 
-print("Roberta_base_CoLA")
+print("Baseline CoLA")
 
-for it in range(1):
+for it in range(2):
     print(f"====== Run {it} ===============")
     #* Init finetuning using peft 
 

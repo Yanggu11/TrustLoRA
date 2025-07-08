@@ -7,9 +7,9 @@ from transformers import RobertaTokenizer, RobertaForSequenceClassification, Tra
 
 from evaluation.metrices import compute_ece
 
-print("Roberta base SST-2")
+print("Baseline SST-2")
 
-for it in range(3):
+for it in range(2):
     print(f"====== Run {it} ===============")
 
     # Load tokenizer and base model
