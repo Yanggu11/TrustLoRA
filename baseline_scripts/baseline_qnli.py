@@ -4,17 +4,17 @@ import evaluate
 from peft import get_peft_model, LoraConfig, TaskType
 from transformers import RobertaTokenizer, RobertaForSequenceClassification, Trainer, TrainingArguments
 
-print("Roberta base SST-2")
+from evaluation.metrices import compute_ece
+
+print("Roberta_base_QNLI")
 
 for it in range(3):
     print(f"====== Run {it} ===============")
-
-    # Load tokenizer and base model
+    
     model_name = "roberta-base"
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
-    base_model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=2)
-
-    # Apply PEFT with LoRA
+    base_model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=2)  # QNLI is binary classification
+    
     peft_config = LoraConfig(
         task_type=TaskType.SEQ_CLS,
         inference_mode=False,
@@ -23,53 +23,60 @@ for it in range(3):
     )
     model = get_peft_model(base_model, peft_config)
 
-    # Print parameter stats
-    total_params = sum(p.numel() for p in model.parameters())
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    total_params = sum(p.numel() for p in base_model.parameters())
+    trainable_params = sum(p.numel() for p in base_model.parameters() if p.requires_grad)
+
     print(f"Total parameters: {total_params:,}")
     print(f"Trainable parameters: {trainable_params:,}")
 
-    # Load SST-2 dataset
-    dataset = load_dataset("glue", "sst2")
+    # Load QNLI dataset
+    dataset = load_dataset("glue", "qnli")
 
-    # Tokenize
+    # Tokenize sentence pairs
     def tokenize_function(examples):
-        return tokenizer(examples["sentence"], truncation=True, padding="max_length", max_length=512)
+        # QNLI has 'question' and 'sentence' columns for the pair
+        return tokenizer(examples["question"], examples["sentence"], truncation=True, padding="max_length", max_length=128)
 
     encoded_dataset = dataset.map(tokenize_function, batched=True)
     encoded_dataset = encoded_dataset.rename_column("label", "labels")
     encoded_dataset.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
 
-    # Load SST-2 metric (accuracy)
-    metric = evaluate.load("glue", "sst2")
+    metric = evaluate.load("glue", "qnli")
 
     def compute_metrics(eval_pred):
         logits, labels = eval_pred
-        predictions = np.argmax(logits, axis=-1)
-        return metric.compute(predictions=predictions, references=labels)
+        probs = torch.nn.functional.softmax(torch.tensor(logits), dim=-1).numpy()
 
-    # Training arguments
+        predictions = np.argmax(probs, axis=-1)
+        results = metric.compute(predictions=predictions, references=labels)
+
+        # Compute ECE
+        ece = compute_ece(probs, labels)
+        results["ece"] = ece
+
+        return results
+
     training_args = TrainingArguments(
-        output_dir=f"./outputs/roberta_base_sst2",
+        output_dir="./outputs/roberta_base_qnli",
         eval_strategy="epoch",
         save_strategy="steps",
-        save_steps=1000000,  # Effectively disables checkpoint saving
-        learning_rate=5e-4,
-        weight_decay=0.1,
+        save_steps=1000000,
+        learning_rate=4e-4,
         per_device_train_batch_size=16,
-        gradient_accumulation_steps=1,
+        gradient_accumulation_steps=2,
         per_device_eval_batch_size=32,
-        num_train_epochs=60,
-        logging_dir=f"./logs/roberta_base_sst2",
-        metric_for_best_model="accuracy",
-        greater_is_better=True,
+        num_train_epochs=25,
+        logging_dir="./logs/roberta_base_qnli",
+        logging_strategy="epoch",
+        metric_for_best_model="accuracy",  # QNLI uses accuracy metric primarily
+        dataloader_num_workers=4,
         warmup_ratio=0.06,
+        weight_decay=0.1,
         lr_scheduler_type="linear",
         optim="adamw_torch",
         disable_tqdm=True
     )
 
-    # Trainer
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -79,5 +86,4 @@ for it in range(3):
         compute_metrics=compute_metrics
     )
 
-    # Train
     trainer.train()

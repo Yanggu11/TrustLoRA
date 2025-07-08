@@ -7,12 +7,11 @@ from transformers import RobertaTokenizer, RobertaModel, RobertaForSequenceClass
 from transformers.modeling_outputs import SequenceClassifierOutput
 from peft import get_peft_model, LoraConfig, TaskType, PeftModel, PeftConfig
 
+from evaluation.metrices import compute_ece, compute_B_std
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-print(f"Using device: {device} on Hypernet with RoBERTa on CoLA")
-
 model_name = "roberta-base"
-
 
 tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
@@ -27,13 +26,6 @@ encoded_dataset.set_format("torch", columns=["input_ids", "attention_mask", "lab
 
 metric = evaluate.load("glue", "cola")
 
-def compute_metrics(eval_pred):
-    logits, labels = eval_pred
-    predictions = np.argmax(logits, axis=-1)
-    return metric.compute(predictions=predictions, references=labels)
-
-
-# --- Hypernetwork: A -> B ---
 class LoRAHyperNet(nn.Module):
     def __init__(self, input_dim, hidden_dim, lora_dim):
         super().__init__()
@@ -47,7 +39,6 @@ class LoRAHyperNet(nn.Module):
 
         return opt
 
-# full dynamic layer acting as LoRA path: lora_B(lora_A(x)) ≈ DynamicLoRALayer(x)
 class DynamicLoRALayer(nn.Module):
     def __init__(self, hidden_size, r, hypernet: nn.Module):
         super().__init__()
@@ -71,6 +62,7 @@ class DynamicLoRALayer(nn.Module):
                 output = torch.matmul(torch.matmul(x, B), A)  # returns [batch, seq_len, hidden]
         return output
 
+
 base_model = RobertaForSequenceClassification.from_pretrained(model_name)
 
 lora_r = 1
@@ -83,7 +75,7 @@ peft_config = LoraConfig(
     task_type=TaskType.SEQ_CLS,
     inference_mode=False,
     r=lora_r,
-    lora_alpha=16
+    lora_alpha=16,
 )
 
 def forward_hook(module, input, output):
@@ -100,7 +92,7 @@ def grad_hook_h(grad):
 
 base_model = get_peft_model(base_model, peft_config=peft_config)
 
-target_layer = hypernet.fc1  # Example layer
+# target_layer = hypernet.fc1  # Example layer
 # hook_handle = target_layer.register_forward_hook(forward_hook)
 # target_layer.weight.register_hook(grad_hook_h)
 # base_model.roberta.encoder.layer[-2].attention.self.query.lora_A["default"].weight.register_hook(grad_hook)
@@ -113,27 +105,35 @@ adapter_name = "default"
 base_model.roberta.encoder.layer[-1].attention.self.query.lora_A[adapter_name] = dynamic_lora_layer
 base_model.roberta.encoder.layer[-1].attention.self.query.lora_B[adapter_name] = nn.Identity()
 
-# for param in base_model.hypernet.parameters():
-#     param.requires_grad = True
-
-# base_model.roberta.encoder.layer[-1].attention.self.query.lora_A.default.weight.requires_grad = False
-# base_model.roberta.encoder.layer[-1].attention.self.query.lora_B.default.weight.requires_grad = False
-
 total_params = sum(p.numel() for p in base_model.parameters())
 trainable_params = sum(p.numel() for p in base_model.parameters() if p.requires_grad)
 print(f"Total parameters: {total_params:,}")
 print(f"Trainable parameters: {trainable_params:,}")
 
-print(base_model.roberta.encoder.layer[-2])
-
-
 for name, param in base_model.named_parameters():
     if "hypernet" in name:
         print(name, param.requires_grad)
 
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    probs = torch.nn.functional.softmax(torch.tensor(logits), dim=-1).numpy()
+
+    predictions = np.argmax(probs, axis=-1)
+    results = metric.compute(predictions=predictions, references=labels)
+
+    # Compute ECE
+    ece = compute_ece(probs, labels)
+    results["ece"] = ece
+
+    # Compute B std from hypernet (only during eval)
+    b_std = compute_B_std(hypernet, r=lora_r, hidden_size=base_hidden_size, device=device)
+    results["hyper_B_std"] = b_std
+
+    return results
+
 
 training_args = TrainingArguments(
-    output_dir="./outputs/roberta_base_cola_hy",
+    output_dir="./outputs/hypernet_cola",
     eval_strategy="epoch",
     # eval_steps=10,
     save_strategy="steps",
@@ -143,15 +143,16 @@ training_args = TrainingArguments(
     gradient_accumulation_steps=2, # 2
     per_device_eval_batch_size=32,
     num_train_epochs=80, # 80
-    logging_dir="./logs/roberta_base_cola_hy",
+    logging_dir="./logs/hypernet_cola",
+    logging_strategy="epoch",
+    # logging_steps=10,
     metric_for_best_model="matthews_correlation",
     dataloader_num_workers=4,
     warmup_ratio=0.06,
     lr_scheduler_type="linear",
     optim="adamw_torch",
     weight_decay=0.1,
-    disable_tqdm=True,
-    # remove_unused_columns=False
+    disable_tqdm=True
 )
 
 trainer = Trainer(
@@ -163,5 +164,6 @@ trainer = Trainer(
     compute_metrics=compute_metrics,
 )
 
-print("=== STARTING TRAINING ===")
 trainer.train()
+
+
