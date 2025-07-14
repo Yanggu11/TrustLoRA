@@ -68,7 +68,6 @@ for it in range(2):
         learning_rate=5e-4,
         weight_decay=0.1,
         per_device_train_batch_size=16,
-        gradient_accumulation_steps=1,
         per_device_eval_batch_size=32,
         num_train_epochs=60,
         logging_dir=f"./logs/baseline_sst2",

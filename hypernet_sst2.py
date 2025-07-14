@@ -145,8 +145,7 @@ for i in range(2):
         save_steps=1000000000,
         learning_rate=5e-4,
         weight_decay=0.1,
-        per_device_train_batch_size=16, # 16
-        gradient_accumulation_steps=1, # 2
+        per_device_train_batch_size=16,
         per_device_eval_batch_size=32,
         num_train_epochs=60,
         logging_dir="./logs/hypernet_sst2",
