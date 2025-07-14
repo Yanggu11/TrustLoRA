@@ -69,7 +69,7 @@ for it in range(2):
         weight_decay=0.1,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=32,
-        num_train_epochs=60,
+        num_train_epochs=15,
         logging_dir=f"./logs/baseline_sst2",
         logging_strategy="epoch",
         metric_for_best_model="accuracy",
