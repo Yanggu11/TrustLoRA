@@ -28,7 +28,7 @@ def compute_B_std(hypernet, device="cuda"):
         Bs = []
         for _ in range(5):
             A = torch.randn((hypernet.lora_r, hypernet.input_dim)).to(device)
-            B = hypernet(A)  # [hidden, r]
+            B = hypernet(A, 0)  # [hidden, r]
             Bs.append(B.cpu().numpy())
         Bs = np.stack(Bs)  # shape: [5, hidden, r]
         std_per_element = np.std(Bs, axis=0)
@@ -40,7 +40,7 @@ def compute_B_mean(hypernet, device="cuda"):
         Bs = []
         for _ in range(5):
             A = torch.randn((hypernet.lora_r, hypernet.input_dim)).to(device)
-            B = hypernet(A)  # [hidden, r]
+            B = hypernet(A, 0)  # [hidden, r]
             Bs.append(B.cpu().numpy())
         Bs = np.stack(Bs)  # shape: [5, hidden, r]
         mean_per_element = np.mean(Bs, axis=0)
