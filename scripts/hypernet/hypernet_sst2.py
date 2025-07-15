@@ -1,21 +1,16 @@
 import time
-print(1)
+
 import numpy as np
-print(2)
 import torch
-print(3)
 from transformers import Trainer, TrainingArguments
-print(4)
+
 from data_loading.get_datasets import get_glue_dataset
-print(5)
 from evaluation.metrics import compute_B_mean, compute_B_std, compute_ece
-print(6)
 from evaluation.metrics_trainer_callback import SaveMetricsCallback
-print(7)
 from models.get_roberta import get_hypernet_on_last_layer_roberta
-print(8)
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
-print(9)
+
 glue_dataset_name = "sst2"
 model_name = "roberta-base"
 lora_r = 1
