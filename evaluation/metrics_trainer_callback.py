@@ -20,6 +20,7 @@ class SaveMetricsCallback(TrainerCallback):
         file_row = ""
         for key in metrics.keys():
             file_row += str(metrics[key]) + ","
+        file_row = file_row[:-1]
         file_row += "\n"
 
         with open(os.path.join(self.directory, self.filepath), "a") as f:
