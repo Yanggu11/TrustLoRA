@@ -61,7 +61,7 @@ for i in range(2):
         lr_scheduler_type="constant",
         optim="adamw_torch",
         weight_decay=0.1,
-        disable_tqdm=False
+        disable_tqdm=True
     )
 
     optimizer = AdamW(model.parameters(), lr=0.1, weight_decay=0.1)

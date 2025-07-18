@@ -11,14 +11,14 @@ from models.get_roberta import get_baseline_roberta
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-glue_dataset_name = "qnli"
+glue_dataset_name = "sst2"
 model_name = "roberta-base"
-lora_r = 1
+lora_r = 8
 lora_alpha = 16
 
-print(f"Baseline on: {glue_dataset_name}")
+print(f"LoRA Baseline on: {glue_dataset_name}")
 
-for i in range(2):
+for i in range(3):
     print(f"=== Run {i} ==============")
 
     model, tokenizer = get_baseline_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha)
@@ -36,16 +36,15 @@ for i in range(2):
         return results
 
     training_args = TrainingArguments(
-        output_dir=f"./outputs/baseline_{glue_dataset_name}",
+        output_dir=f"./outputs/LoRA_baseline_{glue_dataset_name}",
         eval_strategy="epoch",
         save_strategy="steps",
         save_steps=1000000000,
-        learning_rate=4e-4,
+        learning_rate=5e-4,
         weight_decay=0.1,
         per_device_train_batch_size=16,
-        gradient_accumulation_steps=2,
         per_device_eval_batch_size=32,
-        num_train_epochs=25,
+        num_train_epochs=60,
         metric_for_best_model="accuracy",
         warmup_ratio=0.06,
         lr_scheduler_type="linear",
@@ -60,7 +59,7 @@ for i in range(2):
         eval_dataset=encoded_dataset["validation"],
         processing_class=tokenizer,
         compute_metrics=compute_metrics,
-        callbacks=[SaveMetricsCallback(f"./results", f"baseline_{glue_dataset_name}_{str(int(time.time()))}.csv")]
+        callbacks=[SaveMetricsCallback(f"./results", f"LoRA_baseline_{glue_dataset_name}_{str(int(time.time()))}.csv")]
     )
 
     trainer.train()

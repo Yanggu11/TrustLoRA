@@ -13,14 +13,12 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 glue_dataset_name = "cola"
 model_name = "roberta-base"
-lora_r = 1
+lora_r = 8
 lora_alpha = 16
 
-print(f"Basline on: {glue_dataset_name}")
-
-for i in range(2):
+print(f"LoRA Basline on: {glue_dataset_name}")
+for i in range(3):
     print(f"=== Run {i} ==============")
-
     model, tokenizer = get_baseline_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha)
     encoded_dataset, metric = get_glue_dataset(glue_dataset_name, tokenizer, truncation=True, max_length=512)
 
@@ -36,7 +34,7 @@ for i in range(2):
         return results
 
     training_args = TrainingArguments(
-        output_dir=f"./outputs/baseline_{glue_dataset_name}",
+        output_dir=f"./outputs/LoRA_baseline_{glue_dataset_name}",
         eval_strategy="epoch",
         save_strategy="steps",
         save_steps=1000000000,
@@ -44,10 +42,7 @@ for i in range(2):
         per_device_train_batch_size=16,
         gradient_accumulation_steps=2,
         per_device_eval_batch_size=32,
-        num_train_epochs=20, # 80
-        logging_dir=f"./logs/baseline_{glue_dataset_name}",
-        logging_strategy="epoch",
-        # logging_steps=10,
+        num_train_epochs=80,
         metric_for_best_model="matthews_correlation",
         dataloader_num_workers=4,
         warmup_ratio=0.06,
@@ -64,7 +59,7 @@ for i in range(2):
         eval_dataset=encoded_dataset["validation"],
         processing_class=tokenizer,
         compute_metrics=compute_metrics,
-        callbacks=[SaveMetricsCallback(f"./results", f"baseline_{glue_dataset_name}_{str(int(time.time()))}.csv")]
+        callbacks=[SaveMetricsCallback(f"./results", f"LoRA_baseline_{glue_dataset_name}_{str(int(time.time()))}.csv")]
     )
 
     trainer.train()
