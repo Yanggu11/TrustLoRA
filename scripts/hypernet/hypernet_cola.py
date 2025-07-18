@@ -69,7 +69,7 @@ for i in range(2):
     scheduler = ReduceLROnPlateau(
         optimizer,
         mode="min",
-        patience=5
+        patience=10
     )
 
     trainer = Trainer(
