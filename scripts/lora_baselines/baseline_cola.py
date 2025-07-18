@@ -5,12 +5,9 @@ import torch
 from transformers import Trainer, TrainingArguments
 
 from data_loading.get_datasets import get_glue_dataset
-from evaluation.metrics import compute_B_mean, compute_B_std, compute_ece
-from torch.optim import AdamW
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from evaluation.metrics import compute_ece
 from evaluation.metrics_trainer_callback import SaveMetricsCallback
-from evaluation.lr_scheduler_callback import ReduceLROnPlateauCallback
-from models.get_roberta import get_hypernet_on_last_layer_roberta
+from models.get_roberta import get_baseline_roberta
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -18,14 +15,13 @@ glue_dataset_name = "cola"
 model_name = "roberta-base"
 lora_r = 1
 lora_alpha = 16
-hypernet_hidden_dim = 16
 
-print(f"Hypernet on: {glue_dataset_name}")
+print(f"Basline on: {glue_dataset_name}")
 
 for i in range(2):
     print(f"=== Run {i} ==============")
 
-    model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha, hypernet_hidden_dim=hypernet_hidden_dim)
+    model, tokenizer = get_baseline_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha)
     encoded_dataset, metric = get_glue_dataset(glue_dataset_name, tokenizer, truncation=True, max_length=512)
 
     def compute_metrics(eval_pred):
@@ -36,15 +32,12 @@ for i in range(2):
         results = metric.compute(predictions=predictions, references=labels)
 
         results["ece"] = compute_ece(probs, labels)
-        results["hyper_B_std"] = compute_B_std(hypernet, device=device)
-        results["hyper_B_mean"] = compute_B_mean(hypernet, device=device)
 
         return results
 
     training_args = TrainingArguments(
-        output_dir=f"./outputs/hypernet_{glue_dataset_name}",
-        eval_strategy="steps",
-        eval_steps=40,
+        output_dir=f"./outputs/baseline_{glue_dataset_name}",
+        eval_strategy="epoch",
         save_strategy="steps",
         save_steps=1000000000,
         learning_rate=4e-4,
@@ -52,24 +45,16 @@ for i in range(2):
         gradient_accumulation_steps=2,
         per_device_eval_batch_size=32,
         num_train_epochs=20, # 80
-        logging_dir=f"./logs/hypernet_{glue_dataset_name}",
+        logging_dir=f"./logs/baseline_{glue_dataset_name}",
         logging_strategy="epoch",
         # logging_steps=10,
         metric_for_best_model="matthews_correlation",
         dataloader_num_workers=4,
-        warmup_ratio=0.0,
-        lr_scheduler_type="constant",
+        warmup_ratio=0.06,
+        lr_scheduler_type="linear",
         optim="adamw_torch",
         weight_decay=0.1,
-        disable_tqdm=False
-    )
-
-    optimizer = AdamW(model.parameters(), lr=0.1, weight_decay=0.1)
-
-    scheduler = ReduceLROnPlateau(
-        optimizer,
-        mode="min",
-        patience=5
+        disable_tqdm=True
     )
 
     trainer = Trainer(
@@ -79,11 +64,7 @@ for i in range(2):
         eval_dataset=encoded_dataset["validation"],
         processing_class=tokenizer,
         compute_metrics=compute_metrics,
-        callbacks=[
-            ReduceLROnPlateauCallback(),
-            SaveMetricsCallback(f"./results", f"hypernet_{glue_dataset_name}_{str(int(time.time()))}.csv")
-        ],
-        optimizers=(optimizer, scheduler)
+        callbacks=[SaveMetricsCallback(f"./results", f"baseline_{glue_dataset_name}_{str(int(time.time()))}.csv")]
     )
 
     trainer.train()
