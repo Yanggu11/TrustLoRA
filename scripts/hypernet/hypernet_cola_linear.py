@@ -58,19 +58,11 @@ for i in range(2):
         # logging_steps=10,
         metric_for_best_model="matthews_correlation",
         dataloader_num_workers=4,
-        warmup_ratio=0.0,
-        lr_scheduler_type="constant",
+        warmup_ratio=0.06,
+        lr_scheduler_type="linear",
         optim="adamw_torch",
         weight_decay=0.1,
         disable_tqdm=True
-    )
-
-    optimizer = AdamW(model.parameters(), lr=0.1, weight_decay=0.1)
-
-    scheduler = ReduceLROnPlateau(
-        optimizer,
-        mode="min",
-        patience=10
     )
 
     trainer = Trainer(
@@ -81,10 +73,8 @@ for i in range(2):
         processing_class=tokenizer,
         compute_metrics=compute_metrics,
         callbacks=[
-            ReduceLROnPlateauCallback(),
-            SaveMetricsCallback(f"./results", f"hypernet_{glue_dataset_name}_{str(int(time.time()))}.csv")
-        ],
-        optimizers=(optimizer, scheduler)
+            SaveMetricsCallback(f"./results", f"linear_hypernet_{glue_dataset_name}_{str(int(time.time()))}.csv")
+        ]
     )
 
     trainer.train()
