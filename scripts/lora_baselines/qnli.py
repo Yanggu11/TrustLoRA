@@ -32,6 +32,7 @@ for i in range(2):
         results = metric.compute(predictions=predictions, references=labels)
 
         results["ece"] = compute_ece(probs, labels)
+        results["logits_shape_last"] = logits.shape[-1]
         
         return results
 
