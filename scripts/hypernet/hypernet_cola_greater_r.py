@@ -16,9 +16,9 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 glue_dataset_name = "cola"
 model_name = "roberta-base"
-lora_r = 1
+lora_r = 8
 lora_alpha = 16
-hypernet_hidden_dim = 1024
+hypernet_hidden_dim = 128
 hypernet_embeddings_dim = 16
 
 print(f"Hypernet on: {glue_dataset_name}")
@@ -82,7 +82,7 @@ for i in range(1):
         compute_metrics=compute_metrics,
         callbacks=[
             ReduceLROnPlateauCallback(),
-            SaveMetricsCallback(f"./results", f"hypernet_{glue_dataset_name}_{str(int(time.time()))}.csv")
+            SaveMetricsCallback(f"./results", f"r_8_hypernet_{glue_dataset_name}_{str(int(time.time()))}.csv")
         ],
         optimizers=(optimizer, scheduler)
     )

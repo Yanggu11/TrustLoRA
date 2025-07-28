@@ -23,7 +23,7 @@ def get_baseline_roberta(model_name="roberta-base", lora_r=1, lora_alpha=16):
 
     return model, tokenizer
 
-def get_hypernet_on_last_layer_roberta(model_name="roberta-base", lora_r=1, lora_alpha=16, hypernet_hidden_dim=16, hypernet_embeddings_dim=8):
+def get_hypernet_on_last_layer_roberta(model_name="roberta-base", lora_r=1, lora_alpha=16, hypernet_hidden_dim=16, hypernet_embeddings_dim=8, use_on_value_matrix=True):
     model = RobertaForSequenceClassification.from_pretrained(model_name)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
@@ -48,7 +48,8 @@ def get_hypernet_on_last_layer_roberta(model_name="roberta-base", lora_r=1, lora
     model.roberta.encoder.layer[-1].attention.self.query.lora_A[adapter_name] = dynamic_lora_layer_0
     model.roberta.encoder.layer[-1].attention.self.query.lora_B[adapter_name] = nn.Identity()
 
-    model.roberta.encoder.layer[-1].attention.self.value.lora_A[adapter_name] = dynamic_lora_layer_1
-    model.roberta.encoder.layer[-1].attention.self.value.lora_B[adapter_name] = nn.Identity()
+    if use_on_value_matrix:
+        model.roberta.encoder.layer[-1].attention.self.value.lora_A[adapter_name] = dynamic_lora_layer_1
+        model.roberta.encoder.layer[-1].attention.self.value.lora_B[adapter_name] = nn.Identity()
 
     return model, tokenizer, hypernet

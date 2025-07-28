@@ -18,7 +18,7 @@ glue_dataset_name = "cola"
 model_name = "roberta-base"
 lora_r = 1
 lora_alpha = 16
-hypernet_hidden_dim = 1024
+hypernet_hidden_dim = 128
 hypernet_embeddings_dim = 16
 
 print(f"Hypernet on: {glue_dataset_name}")
@@ -26,7 +26,7 @@ print(f"Hypernet on: {glue_dataset_name}")
 for i in range(1):
     print(f"=== Run {i} ==============")
 
-    model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha, hypernet_hidden_dim=hypernet_hidden_dim, hypernet_embeddings_dim=hypernet_embeddings_dim)
+    model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha, hypernet_hidden_dim=hypernet_hidden_dim, hypernet_embeddings_dim=hypernet_embeddings_dim, use_on_value_matrix=False)
     encoded_dataset, metric = get_glue_dataset(glue_dataset_name, tokenizer, truncation=True, max_length=512)
 
     def compute_metrics(eval_pred):
@@ -82,7 +82,7 @@ for i in range(1):
         compute_metrics=compute_metrics,
         callbacks=[
             ReduceLROnPlateauCallback(),
-            SaveMetricsCallback(f"./results", f"hypernet_{glue_dataset_name}_{str(int(time.time()))}.csv")
+            SaveMetricsCallback(f"./results", f"query_hypernet_{glue_dataset_name}_{str(int(time.time()))}.csv")
         ],
         optimizers=(optimizer, scheduler)
     )
