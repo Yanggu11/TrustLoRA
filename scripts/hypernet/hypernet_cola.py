@@ -18,7 +18,7 @@ glue_dataset_name = "cola"
 model_name = "roberta-base"
 lora_r = 1
 lora_alpha = 16
-hypernet_hidden_dim = 1024
+hypernet_hidden_dim = 128
 hypernet_embeddings_dim = 16
 
 print(f"Hypernet on: {glue_dataset_name}")
