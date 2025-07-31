@@ -24,6 +24,6 @@ class LoRAHyperNet(nn.Module):
         flat = torch.cat((layer_embedding, inpt.flatten()), dim=0)
 
         h = torch.relu(self.fc1(flat))
-        opt = self.fc2(h).view(input_shape[1], input_shape[0])  # B shape: [in_dim, r]
+        opt = self.fc2(h).view(input_shape[1], input_shape[0])  # B shape: [r, in_dim]
 
         return opt
