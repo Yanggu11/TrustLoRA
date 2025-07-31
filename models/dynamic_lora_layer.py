@@ -12,14 +12,11 @@ class DynamicLoRALayer(nn.Module):
 
         self.weight = torch.tensor(0.0, dtype=self.hypernet.fc1.weight.dtype)
 
-        self.A = None
+        self.A = torch.randn((self.hidden_size, self.r))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if self.A is None:
-            self.A = torch.randn((self.hidden_size, self.r)).to(x.device)
-
-        A = self.A
-
+        A = self.A.to(x.device)
         B = self.hypernet(A, self.layer_id)  # A: [hidden, r], B: [r, hidden]
+
         output = torch.matmul(torch.matmul(x, A), B)  # returns [batch, seq_len, hidden]
         return output
