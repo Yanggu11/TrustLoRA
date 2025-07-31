@@ -23,7 +23,7 @@ print(f"Hypernet on: {glue_dataset_name}")
 for i in range(1):
     print(f"=== Run {i} ==============")
 
-    model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha, hypernet_hidden_dim=hypernet_hidden_dim, hypernet_embeddings_dim=hypernet_embeddings_dim, use_on_value_matrix=False, hypernet_with_embedding_input=True)
+    model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha, hypernet_hidden_dim=hypernet_hidden_dim, hypernet_embeddings_dim=hypernet_embeddings_dim, use_on_value_matrix=True, hypernet_with_embedding_input=True)
     encoded_dataset, metric = get_glue_dataset(glue_dataset_name, tokenizer, truncation=True, max_length=512)
 
     def compute_metrics(eval_pred):
