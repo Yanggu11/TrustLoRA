@@ -33,4 +33,6 @@ params = {
 
     "results_dir": "./results/hypernet",
     "results_filename": f"hypernet",
+
+    "num_runs": 3,
 }

@@ -9,13 +9,12 @@ from evaluation.lr_scheduler_callback import ReduceLROnPlateauCallback
 from evaluation.metrics import compute_B_mean, compute_B_std, compute_ece
 from evaluation.metrics_trainer_callback import SaveMetricsCallback
 from models.get_roberta import get_baseline_roberta, get_hypernet_on_last_layer_roberta
-from params.lora_baselines.cola import params
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+import argparse
+import importlib.util
+import os
 
-print(f"Hypernet on: {params["glue_dataset_name"]}")
-
-for i in range(1):
+def run_experiment(params, i, device="cpu"):
     print(f"=== Run {i} ==============")
 
     experiment_id = str(int(time.time()))
@@ -97,3 +96,35 @@ for i in range(1):
 
     trainer.evaluate()
     trainer.train()
+
+def load_params_from_file(file_path):
+    spec = importlib.util.spec_from_file_location("params_module", file_path)
+    params_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(params_module)
+    return params_module.params
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--params",
+        type=str,
+        required=True,
+        help="Path to params .py file"
+    )
+    args = parser.parse_args()
+
+    # Load params
+    if not os.path.exists(args.params):
+        raise FileNotFoundError(f"Params file {args.params} does not exist.")
+
+    params = load_params_from_file(args.params)
+    print("Loaded params:", params)
+
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    print(f"Hypernet on: {params["glue_dataset_name"]}")
+
+    for i in range(params["num_runs"]):
+        run_experiment(params, i, device=device)
+    

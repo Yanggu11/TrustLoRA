@@ -1,5 +1,5 @@
 params = {
-    "glue_dataset_name": "cola",
+    "glue_dataset_name": "qnli",
     "model_name": "roberta-base",
     "use_hypernet": False,
 
@@ -18,15 +18,15 @@ params = {
     "per_device_train_batch_size": 16,
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 2,
-    "num_train_epochs": 80,
-    "metric_for_best_model": "matthews_correlation",
+    "num_train_epochs": 25,
+    "metric_for_best_model": "accuracy",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": True,
 
     "results_dir": "./results/baselines",
-    "results_filename": f"cola_baseline",
+    "results_filename": f"qnli_baseline",
 
-    "num_runs": 3,
+    "num_runs": 3
 }

@@ -1,5 +1,5 @@
 params = {
-    "glue_dataset_name": "cola",
+    "glue_dataset_name": "sst2",
     "model_name": "roberta-base",
     "use_hypernet": False,
 
@@ -13,12 +13,12 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 4e-4,
+    "learning_rate": 5e-4,
     "weight_decay": 0.1,
     "per_device_train_batch_size": 16,
     "per_device_eval_batch_size": 32,
-    "gradient_accumulation_steps": 2,
-    "num_train_epochs": 80,
+    "gradient_accumulation_steps": 1,
+    "num_train_epochs": 60,
     "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
@@ -26,7 +26,7 @@ params = {
     "disable_tqdm": True,
 
     "results_dir": "./results/baselines",
-    "results_filename": f"cola_baseline",
+    "results_filename": f"LoRA_baseline",
 
     "num_runs": 3,
 }
