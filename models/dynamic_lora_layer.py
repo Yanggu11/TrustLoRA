@@ -5,12 +5,13 @@ import torch.nn as nn
 
 
 class DynamicLoRALayer(nn.Module):
-    def __init__(self, hidden_size: int, r: int, hypernet: nn.Module, layer_id: int):
+    def __init__(self, hidden_size: int, r: int, hypernet: nn.Module, layer_id: int, use_fixed_A: bool = True):
         super().__init__()
         self.hidden_size = hidden_size
         self.r = r
         self.hypernet = hypernet
         self.layer_id = layer_id
+        self.use_fixed_A = use_fixed_A
 
         self.weight = torch.tensor(0.0, dtype=self.hypernet.fc1.weight.dtype)
 
@@ -18,7 +19,11 @@ class DynamicLoRALayer(nn.Module):
         nn.init.kaiming_uniform_(self.A, a=math.sqrt(5))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        A = self.A.to(x.device)
+        if self.use_fixed_A:
+            A = self.A.to(x.device)
+        else:
+            A = torch.empty((self.hidden_size, self.r)).to(x.device)  # uninitialized tensor
+            nn.init.kaiming_uniform_(A, a=math.sqrt(5))
         B = self.hypernet(A, self.layer_id)  # A: [hidden, r], B: [r, hidden]
 
         output = torch.matmul(torch.matmul(x, A), B)  # returns [batch, seq_len, hidden]

@@ -6,14 +6,15 @@ params = {
     "lora_r": 8,
     "lora_alpha": 16,
 
-    "hypernet_hidden_dim": 128,
+    "hypernet_hidden_dim": 32,
     "hypernet_embeddings_dim": 16,
-    "hypernet_use_on_value_matrix": False,
+    "hypernet_use_on_value_matrix": True,
     "hypernet_with_embedding_input_only": False,
+    "hypernet_large_model": False,
     "hypernet_use_fixed_A": True,
 
     "output_dir": f"./outputs/hypernet",
-    "eval_strategy": "steps",
+    "eval_strategy": "epoch",
     "eval_steps": 5,
     "save_strategy": "steps",
     "save_steps": 1000000000,
@@ -24,15 +25,14 @@ params = {
     "per_device_train_batch_size": 16,
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 2,
-    "num_train_epochs": 80,
+    "num_train_epochs": 20,
     "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
-    "disable_tqdm": False,
+    "disable_tqdm": True,
 
-    "results_dir": "./results/hypernet",
-    "results_filename": f"hypernet",
+    "results_dir": "./results/hypernet_new_ablation",
 
-    "num_runs": 3,
+    "num_runs": 1,
 }

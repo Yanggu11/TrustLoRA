@@ -1,16 +1,13 @@
 import torch
 import torch.nn as nn
-from peft import LoraConfig, PeftConfig, PeftModel, TaskType, get_peft_model
+from peft import LoraConfig, TaskType, get_peft_model
 from transformers import (
     RobertaForSequenceClassification,
-    RobertaModel,
     RobertaTokenizer,
-    Trainer,
-    TrainingArguments,
 )
 
 from models.dynamic_lora_layer import DynamicLoRALayer
-from models.hypernet import LoRAHyperNet, LoRAHyperNetEmbeddingInput
+from models.hypernet import LoRAHyperNet
 
 
 def get_baseline_roberta(model_name="roberta-base", lora_r=1, lora_alpha=16):
@@ -38,6 +35,7 @@ def get_hypernet_on_last_layer_roberta(
     use_on_value_matrix=True,
     hypernet_with_embedding_input_only=False, #! in older versions of the code there is wihtout "_only"
     use_fixed_A=True,
+    use_large_model=False,
 ):
     model = RobertaForSequenceClassification.from_pretrained(model_name)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
@@ -46,22 +44,15 @@ def get_hypernet_on_last_layer_roberta(
         768  #! This must be set according to the layer that we are applying hypernet on
     )
 
-    if hypernet_with_embedding_input_only:
-        hypernet = LoRAHyperNetEmbeddingInput(
-            base_hidden_size,
-            hypernet_hidden_dim,
-            lora_r,
-            num_of_embeddings=2,
-            embedding_dim=hypernet_embeddings_dim,
-        )
-    else:
-        hypernet = LoRAHyperNet(
-            base_hidden_size,
-            hypernet_hidden_dim,
-            lora_r,
-            num_of_embeddings=2,
-            embedding_dim=hypernet_embeddings_dim,
-        )
+    hypernet = LoRAHyperNet(
+        base_hidden_size,
+        hypernet_hidden_dim,
+        lora_r,
+        num_of_embeddings=2,
+        embedding_dim=hypernet_embeddings_dim,
+        embedding_input_only=hypernet_with_embedding_input_only,
+        large_model=use_large_model
+    )
 
     peft_config = LoraConfig(
         task_type=TaskType.SEQ_CLS,
@@ -73,10 +64,10 @@ def get_hypernet_on_last_layer_roberta(
     model = get_peft_model(model, peft_config=peft_config)
 
     dynamic_lora_layer_0 = DynamicLoRALayer(
-        base_hidden_size, lora_r, hypernet, layer_id=0
+        base_hidden_size, lora_r, hypernet, layer_id=0, use_fixed_A=use_fixed_A
     )
     dynamic_lora_layer_1 = DynamicLoRALayer(
-        base_hidden_size, lora_r, hypernet, layer_id=1
+        base_hidden_size, lora_r, hypernet, layer_id=1, use_fixed_A=use_fixed_A
     )
 
     adapter_name = "default"

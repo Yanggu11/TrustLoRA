@@ -26,7 +26,6 @@ params = {
     "disable_tqdm": True,
 
     "results_dir": "./results/baselines",
-    "results_filename": f"cola_baseline",
 
     "num_runs": 3,
 }

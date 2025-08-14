@@ -30,6 +30,7 @@ def run_experiment(params, i, device="cpu"):
             hypernet_with_embedding_input_only=params[
                 "hypernet_with_embedding_input_only"
             ],
+            use_large_model=params["hypernet_large_model"],
             use_fixed_A=params["hypernet_use_fixed_A"],
         )
     else:
@@ -119,6 +120,8 @@ if __name__ == "__main__":
 
     params = load_params_from_file(args.params)
     print("Loaded params:", params)
+
+    params["results_filename"] = args.params.replace(".py", "").replace(".", "").replace("/", "_")
 
 
     device = "cuda" if torch.cuda.is_available() else "cpu"

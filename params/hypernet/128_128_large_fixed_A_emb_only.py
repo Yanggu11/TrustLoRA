@@ -1,14 +1,21 @@
 params = {
-    "glue_dataset_name": "qnli",
+    "glue_dataset_name": "cola",
     "model_name": "roberta-base",
-    "use_hypernet": False,
+    "use_hypernet": True,
 
     "lora_r": 8,
     "lora_alpha": 16,
 
-    "output_dir": f"./outputs/LoRA_baseline",
+    "hypernet_hidden_dim": 128,
+    "hypernet_embeddings_dim": 128,
+    "hypernet_use_on_value_matrix": True,
+    "hypernet_with_embedding_input_only": True,
+    "hypernet_large_model": True,
+    "hypernet_use_fixed_A": True,
+
+    "output_dir": f"./outputs/hypernet",
     "eval_strategy": "epoch",
-    "eval_steps": 50,
+    "eval_steps": 5,
     "save_strategy": "steps",
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
@@ -18,14 +25,14 @@ params = {
     "per_device_train_batch_size": 16,
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 2,
-    "num_train_epochs": 25,
-    "metric_for_best_model": "accuracy",
+    "num_train_epochs": 20,
+    "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": True,
 
-    "results_dir": "./results/baselines",
+    "results_dir": "./results/hypernet_new_ablation",
 
-    "num_runs": 3
+    "num_runs": 1,
 }
