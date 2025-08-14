@@ -1,3 +1,5 @@
+import math
+
 import torch
 import torch.nn as nn
 
@@ -12,7 +14,8 @@ class DynamicLoRALayer(nn.Module):
 
         self.weight = torch.tensor(0.0, dtype=self.hypernet.fc1.weight.dtype)
 
-        self.A = torch.randn((self.hidden_size, self.r))
+        self.A = torch.empty((self.hidden_size, self.r))  # uninitialized tensor
+        nn.init.kaiming_uniform_(self.A, a=math.sqrt(5))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         A = self.A.to(x.device)

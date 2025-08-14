@@ -23,26 +23,34 @@ def compute_ece(probabilities, labels, n_bins=15):
             ece += np.abs(avg_confidence_in_bin - accuracy_in_bin) * prop_in_bin
     return ece
 
+
 def compute_B_std(hypernet, device="cuda"):
     with torch.no_grad():
         Bs = []
-        for _ in range(5):
-            A = torch.randn((hypernet.lora_r, hypernet.input_dim)).to(device)
+        num_of_matrices = 5
+        for _ in range(num_of_matrices):
+            A = torch.randn((hypernet.input_dim, hypernet.lora_r)).to(device)
             B = hypernet(A, 0)  # [hidden, r]
             Bs.append(B.cpu().numpy())
-        Bs = np.stack(Bs)  # shape: [5, hidden, r]
-        std_per_element = np.std(Bs, axis=0)
-        mean_std = np.mean(std_per_element)
+        Bs = np.stack(Bs)  # shape: [num_of_matrices, hidden, r]
+        std_per_batch_element = np.std(
+            Bs.reshape(num_of_matrices, -1), axis=1
+        )  # shape: [5]
+        mean_std = np.mean(std_per_batch_element)
         return float(mean_std)
+
 
 def compute_B_mean(hypernet, device="cuda"):
     with torch.no_grad():
         Bs = []
-        for _ in range(5):
-            A = torch.randn((hypernet.lora_r, hypernet.input_dim)).to(device)
+        num_of_matrices = 5
+        for _ in range(num_of_matrices):
+            A = torch.randn((hypernet.input_dim, hypernet.lora_r)).to(device)
             B = hypernet(A, 0)  # [hidden, r]
             Bs.append(B.cpu().numpy())
-        Bs = np.stack(Bs)  # shape: [5, hidden, r]
-        mean_per_element = np.mean(Bs, axis=0)
-        avg_mean = np.mean(mean_per_element)
-        return float(avg_mean)
+        Bs = np.stack(Bs)  # shape: [num_of_matrices, hidden, r]
+        mean_per_batch_element = np.mean(
+            Bs.reshape(num_of_matrices, -1), axis=1
+        )  # shape: [5]
+        mean_mean = np.mean(mean_per_batch_element)
+        return float(mean_mean)

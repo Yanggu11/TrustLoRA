@@ -7,4 +7,4 @@ class ReduceLROnPlateauCallback(TrainerCallback):
             # print(f"[Evaluation] Current LR: {kwargs['optimizer'].param_groups[0]['lr']}")
             metric_value = metrics.get("eval_loss")
             if metric_value is not None:
-                kwargs['lr_scheduler'].step(metric_value)
+                kwargs["lr_scheduler"].step(metric_value)

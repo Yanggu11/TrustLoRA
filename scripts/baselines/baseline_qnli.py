@@ -21,8 +21,12 @@ print(f"Baseline on: {glue_dataset_name}")
 for i in range(2):
     print(f"=== Run {i} ==============")
 
-    model, tokenizer = get_baseline_roberta(model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha)
-    encoded_dataset, metric = get_glue_dataset(glue_dataset_name, tokenizer, truncation=True, max_length=512)
+    model, tokenizer = get_baseline_roberta(
+        model_name=model_name, lora_r=lora_r, lora_alpha=lora_alpha
+    )
+    encoded_dataset, metric = get_glue_dataset(
+        glue_dataset_name, tokenizer, truncation=True, max_length=512
+    )
 
     def compute_metrics(eval_pred):
         logits, labels = eval_pred
@@ -32,7 +36,7 @@ for i in range(2):
         results = metric.compute(predictions=predictions, references=labels)
 
         results["ece"] = compute_ece(probs, labels)
-        
+
         return results
 
     training_args = TrainingArguments(
@@ -50,7 +54,7 @@ for i in range(2):
         warmup_ratio=0.06,
         lr_scheduler_type="linear",
         optim="adamw_torch",
-        disable_tqdm=True
+        disable_tqdm=True,
     )
 
     trainer = Trainer(
@@ -60,9 +64,12 @@ for i in range(2):
         eval_dataset=encoded_dataset["validation"],
         processing_class=tokenizer,
         compute_metrics=compute_metrics,
-        callbacks=[SaveMetricsCallback(f"./results", f"baseline_{glue_dataset_name}_{str(int(time.time()))}.csv")]
+        callbacks=[
+            SaveMetricsCallback(
+                f"./results",
+                f"baseline_{glue_dataset_name}_{str(int(time.time()))}.csv",
+            )
+        ],
     )
 
     trainer.train()
-
-
