@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    print(f"Hypernet on: {params["glue_dataset_name"]}")
+    print(f"Hypernet on: {params['glue_dataset_name']}")
 
     for i in range(params["num_runs"]):
         run_experiment(params, i, device=device)
