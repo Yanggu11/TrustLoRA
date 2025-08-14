@@ -57,7 +57,7 @@ def run_experiment(params, i, device="cpu"):
         return results
 
     training_args = TrainingArguments(
-        output_dir=f"{params["output_dir"]}_{params["glue_dataset_name"]}_{experiment_id}",
+        output_dir=f"{params['output_dir']}_{params['glue_dataset_name']}_{experiment_id}",
         eval_strategy=params["eval_strategy"],
         eval_steps=params["eval_steps"] if params["eval_strategy"] == "steps" else None,
         save_strategy=params["save_strategy"],
@@ -89,7 +89,7 @@ def run_experiment(params, i, device="cpu"):
         callbacks=[
             SaveMetricsCallback(
                 params["results_dir"],
-                f"{params["results_filename"]}_{params["glue_dataset_name"]}_{experiment_id}.csv",
+                f"{params['results_filename']}_{params['glue_dataset_name']}_{experiment_id}.csv",
             )
         ],
     )
