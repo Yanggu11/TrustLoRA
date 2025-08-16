@@ -122,6 +122,7 @@ if __name__ == "__main__":
     print("Loaded params:", params)
 
     params["results_filename"] = args.params.replace(".py", "").replace(".", "").replace("/", "_")
+    params["results_filename"] = params["results_filename"] if params["results_filename"][0] != "_" else params["results_filename"][1:]
 
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
