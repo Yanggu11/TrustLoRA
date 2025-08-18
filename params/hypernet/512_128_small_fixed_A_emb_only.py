@@ -32,7 +32,7 @@ params = {
     "optim": "adamw_torch",
     "disable_tqdm": True,
 
-    "results_dir": "./results/best_cola",
+    "results_dir": "./results/hypernet_new_ablation",
 
-    "num_runs": 5,
+    "num_runs": 1,
 }
