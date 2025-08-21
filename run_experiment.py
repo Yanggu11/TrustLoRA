@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 import torch
-from transformers import Trainer, TrainingArguments
+from transformers import Trainer, TrainingArguments, enable_full_determinism
 
 from data_loading.get_datasets import get_glue_dataset
 from evaluation.lr_scheduler_callback import ReduceLROnPlateauCallback
@@ -13,17 +13,39 @@ from models.get_roberta import get_baseline_roberta, get_hypernet_on_last_layer_
 import argparse
 import importlib.util
 import os
+import random
 
-def run_experiment(params, i, device="cpu"):
-    print(f"=== Run {i} ==============")
+def set_global_seed(seed: int):
+
+    random.seed(seed)
+    
+    np.random.seed(seed)
+    
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    
+    enable_full_determinism(seed)
+    
+    print(f"Global seed set to {seed}")
+
+
+def run_experiment(params, id, device="cpu"):
+    print(f"=== Run {id} ==============")
 
     experiment_id = str(int(time.time()))
+    random_seed = params["seed"] + id if params["seed"] else id
+    set_global_seed(random_seed)
 
     if params["use_hypernet"]:
         model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(
             model_name=params["model_name"],
             lora_r=params["lora_r"],
             lora_alpha=params["lora_alpha"],
+            hypernet_layers=params["layers_to_use_hypernet"] if params["layers_to_use_hypernet"] else [11],
             hypernet_hidden_dim=params["hypernet_hidden_dim"],
             hypernet_embeddings_dim=params["hypernet_embeddings_dim"],
             use_on_value_matrix=params["hypernet_use_on_value_matrix"],

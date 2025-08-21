@@ -30,6 +30,7 @@ def get_hypernet_on_last_layer_roberta(
     model_name="roberta-base",
     lora_r=1,
     lora_alpha=16,
+    hypernet_layers=[11],
     hypernet_hidden_dim=16,
     hypernet_embeddings_dim=8,
     use_on_value_matrix=True,
@@ -48,7 +49,7 @@ def get_hypernet_on_last_layer_roberta(
         base_hidden_size,
         hypernet_hidden_dim,
         lora_r,
-        num_of_embeddings=2,
+        num_of_embeddings=2 * len(hypernet_layers) if use_on_value_matrix else len(hypernet_layers),
         embedding_dim=hypernet_embeddings_dim,
         embedding_input_only=hypernet_with_embedding_input_only,
         large_model=use_large_model
@@ -63,28 +64,32 @@ def get_hypernet_on_last_layer_roberta(
 
     model = get_peft_model(model, peft_config=peft_config)
 
-    dynamic_lora_layer_0 = DynamicLoRALayer(
-        base_hidden_size, lora_r, hypernet, layer_id=0, use_fixed_A=use_fixed_A
-    )
-    dynamic_lora_layer_1 = DynamicLoRALayer(
-        base_hidden_size, lora_r, hypernet, layer_id=1, use_fixed_A=use_fixed_A
-    )
+    dynamic_lora_layers = []
 
-    adapter_name = "default"
+    for idx, layer_id in enumerate(hypernet_layers):
 
-    model.roberta.encoder.layer[-1].attention.self.query.lora_A[
-        adapter_name
-    ] = dynamic_lora_layer_0
-    model.roberta.encoder.layer[-1].attention.self.query.lora_B[
-        adapter_name
-    ] = nn.Identity()
+        dynamic_lora_layers.append(DynamicLoRALayer(
+            base_hidden_size, lora_r, hypernet, layer_id=idx, use_fixed_A=use_fixed_A
+        ))
 
-    if use_on_value_matrix:
-        model.roberta.encoder.layer[-1].attention.self.value.lora_A[
+        adapter_name = "default"
+
+        model.roberta.encoder.layer[layer_id].attention.self.query.lora_A[
             adapter_name
-        ] = dynamic_lora_layer_1
-        model.roberta.encoder.layer[-1].attention.self.value.lora_B[
+        ] = dynamic_lora_layers[-1]
+        model.roberta.encoder.layer[layer_id].attention.self.query.lora_B[
             adapter_name
         ] = nn.Identity()
+
+        if use_on_value_matrix:
+            dynamic_lora_layers.append(DynamicLoRALayer(
+                base_hidden_size, lora_r, hypernet, layer_id=idx + len(hypernet_layers), use_fixed_A=use_fixed_A
+            ))
+            model.roberta.encoder.layer[layer_id].attention.self.value.lora_A[
+                adapter_name
+            ] = dynamic_lora_layers[-1]
+            model.roberta.encoder.layer[layer_id].attention.self.value.lora_B[
+                adapter_name
+            ] = nn.Identity()
 
     return model, tokenizer, hypernet
