@@ -5,9 +5,9 @@ import torch
 from transformers import Trainer, TrainingArguments, enable_full_determinism
 
 from data_loading.get_datasets import get_glue_dataset
-from evaluation.lr_scheduler_callback import ReduceLROnPlateauCallback
 from evaluation.metrics import compute_B_mean, compute_B_std, compute_ece
 from evaluation.metrics_trainer_callback import SaveMetricsCallback
+from evaluation.forward_pass_repetition_data_collator import SimpleGradientAccumulationTrainer
 from models.get_roberta import get_baseline_roberta, get_hypernet_on_last_layer_roberta
 
 import argparse
@@ -32,7 +32,6 @@ def set_global_seed(seed: int):
     
     print(f"Global seed set to {seed}")
 
-
 def run_experiment(params, id, device="cpu"):
     print(f"=== Run {id} ==============")
 
@@ -54,12 +53,18 @@ def run_experiment(params, id, device="cpu"):
             ],
             use_large_model=params["hypernet_large_model"],
             use_fixed_A=params["hypernet_use_fixed_A"],
+            target_modules=params.get("target_modules", ["query", "value"]),
+            layers_to_transform=params.get("layers_to_transform", list(range(12))),
+            layers_pattern=params.get("layers_pattern", "encoder.layer"),
         )
     else:
         model, tokenizer = get_baseline_roberta(
             model_name=params["model_name"],
             lora_r=params["lora_r"],
             lora_alpha=params["lora_alpha"],
+            target_modules=params.get("target_modules", ["query", "value"]),
+            layers_to_transform=params.get("layers_to_transform", list(range(12))),
+            layers_pattern=params.get("layers_pattern", "encoder.layer"),
         )
     encoded_dataset, metric = get_glue_dataset(
         params["glue_dataset_name"], tokenizer, truncation=True, max_length=512
@@ -102,20 +107,38 @@ def run_experiment(params, id, device="cpu"):
         disable_tqdm=params["disable_tqdm"],
     )
 
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=encoded_dataset["train"],
-        eval_dataset=encoded_dataset["validation"],
-        processing_class=tokenizer,
-        compute_metrics=compute_metrics,
-        callbacks=[
-            SaveMetricsCallback(
-                params["results_dir"],
-                f"{params['results_filename']}_{params['glue_dataset_name']}_{experiment_id}.csv",
-            )
-        ],
-    )
+    if params["forward_pass_reps"] > 1:
+        trainer = SimpleGradientAccumulationTrainer(
+            model=model,
+            args=training_args,
+            train_dataset=encoded_dataset["train"],
+            eval_dataset=encoded_dataset["validation"],
+            processing_class=tokenizer,
+            compute_metrics=compute_metrics,
+            callbacks=[
+                SaveMetricsCallback(
+                    params["results_dir"],
+                    f"{params['results_filename']}_{params['glue_dataset_name']}_{experiment_id}.csv",
+                ),
+            ],
+            accumulation_steps=params["forward_pass_reps"],
+        )
+    else:
+        trainer = Trainer(
+            model=model,
+            args=training_args,
+            train_dataset=encoded_dataset["train"],
+            eval_dataset=encoded_dataset["validation"],
+            processing_class=tokenizer,
+            compute_metrics=compute_metrics,
+            callbacks=[
+                SaveMetricsCallback(
+                    params["results_dir"],
+                    f"{params['results_filename']}_{params['glue_dataset_name']}_{experiment_id}.csv",
+                ),
+            ],
+        )
+
 
     trainer.evaluate()
     trainer.train()

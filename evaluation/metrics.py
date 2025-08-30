@@ -34,7 +34,7 @@ def compute_B_std(hypernet, device="cuda"):
             Bs.append(B.cpu().numpy())
         Bs = np.stack(Bs)  # shape: [num_of_matrices, hidden, r]
         std_per_batch_element = np.std(
-            Bs.reshape(num_of_matrices, -1), axis=1
+            Bs.reshape(num_of_matrices, -1), axis=0
         )  # shape: [5]
         mean_std = np.mean(std_per_batch_element)
         return float(mean_std)
@@ -50,7 +50,7 @@ def compute_B_mean(hypernet, device="cuda"):
             Bs.append(B.cpu().numpy())
         Bs = np.stack(Bs)  # shape: [num_of_matrices, hidden, r]
         mean_per_batch_element = np.mean(
-            Bs.reshape(num_of_matrices, -1), axis=1
+            Bs.reshape(num_of_matrices, -1), axis=0
         )  # shape: [5]
         mean_mean = np.mean(mean_per_batch_element)
         return float(mean_mean)

@@ -10,7 +10,14 @@ from models.dynamic_lora_layer import DynamicLoRALayer
 from models.hypernet import LoRAHyperNet
 
 
-def get_baseline_roberta(model_name="roberta-base", lora_r=1, lora_alpha=16):
+def get_baseline_roberta(
+    model_name="roberta-base",
+    lora_r=1,
+    lora_alpha=16,
+    target_modules=["query", "value"],
+    layers_to_transform=list(range(12)),
+    layers_pattern="encoder.layer",
+):
     model = RobertaForSequenceClassification.from_pretrained(model_name)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
@@ -19,6 +26,9 @@ def get_baseline_roberta(model_name="roberta-base", lora_r=1, lora_alpha=16):
         inference_mode=False,
         r=lora_r,
         lora_alpha=lora_alpha,
+        target_modules=target_modules,
+        layers_to_transform=layers_to_transform,
+        layers_pattern=layers_pattern,
     )
 
     model = get_peft_model(model, peft_config=peft_config)
@@ -37,13 +47,14 @@ def get_hypernet_on_last_layer_roberta(
     hypernet_with_embedding_input_only=False, #! in older versions of the code there is wihtout "_only"
     use_fixed_A=True,
     use_large_model=False,
+    target_modules=["query", "value"],
+    layers_to_transform=list(range(12)),
+    layers_pattern="encoder.layer",
 ):
     model = RobertaForSequenceClassification.from_pretrained(model_name)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
-    base_hidden_size = (
-        768  #! This must be set according to the layer that we are applying hypernet on
-    )
+    base_hidden_size = model.config.hidden_size
 
     hypernet = LoRAHyperNet(
         base_hidden_size,
@@ -60,6 +71,9 @@ def get_hypernet_on_last_layer_roberta(
         inference_mode=False,
         r=lora_r,
         lora_alpha=lora_alpha,
+        target_modules=target_modules,
+        layers_to_transform=layers_to_transform,
+        layers_pattern=layers_pattern,
     )
 
     model = get_peft_model(model, peft_config=peft_config)
