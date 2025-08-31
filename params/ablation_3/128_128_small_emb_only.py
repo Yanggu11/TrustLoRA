@@ -18,6 +18,8 @@ params = {
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
 
+    "forward_pass_reps": 1,
+
     "output_dir": f"./outputs/hypernet",
     "eval_strategy": "epoch",
     "eval_steps": 5,
@@ -37,7 +39,7 @@ params = {
     "optim": "adamw_torch",
     "disable_tqdm": True,
 
-    "results_dir": "./results/hypernet_new_ablation",
+    "results_dir": "./results/ablation_3",
 
     "num_runs": 1,
     "seed": 11,

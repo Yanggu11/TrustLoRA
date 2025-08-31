@@ -14,6 +14,8 @@ params = {
     "hypernet_large_model": False,
     "hypernet_use_fixed_A": False,
 
+    "forward_pass_reps": 1,
+
     "target_modules": ["query", "value"],
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
@@ -37,7 +39,7 @@ params = {
     "optim": "adamw_torch",
     "disable_tqdm": True,
 
-    "results_dir": "./results/hypernet_new_ablation",
+    "results_dir": "./results/ablation_3",
 
     "num_runs": 1,
     "seed": 11,

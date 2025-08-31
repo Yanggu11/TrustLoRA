@@ -10,6 +10,7 @@ params = {
     "layers_to_transform": list(range(10)),
     "layers_pattern": "encoder.layer",
 
+    "forward_pass_reps": 1,
 
     "output_dir": f"./outputs/LoRA_baseline",
     "eval_strategy": "epoch",
@@ -30,7 +31,7 @@ params = {
     "optim": "adamw_torch",
     "disable_tqdm": True,
 
-    "results_dir": "./results/baseline_without_last_2",
+    "results_dir": "./results/ablation_3",
 
     "num_runs": 2,
     "seed": 11
