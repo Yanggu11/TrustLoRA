@@ -1,28 +1,20 @@
 params = {
     "glue_dataset_name": "cola",
     "model_name": "roberta-base",
-    "use_hypernet": True,
+    "use_hypernet": False,
 
     "lora_r": 8,
     "lora_alpha": 16,
 
-    "hypernet_hidden_dim": 128,
-    "hypernet_embeddings_dim": 128,
-    "layers_to_use_hypernet": [11],
-    "hypernet_use_on_value_matrix": True,
-    "hypernet_with_embedding_input_only": False,
-    "hypernet_large_model": False,
-    "hypernet_use_fixed_A": False,
-
     "target_modules": ["query", "value"],
-    "layers_to_transform": list(range(12)),
+    "layers_to_transform": list(range(8)),
     "layers_pattern": "encoder.layer",
 
     "forward_pass_reps": 1,
 
-    "output_dir": f"./outputs/hypernet",
+    "output_dir": f"./outputs/LoRA_baseline",
     "eval_strategy": "epoch",
-    "eval_steps": 5,
+    "eval_steps": 50,
     "save_strategy": "steps",
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
@@ -41,6 +33,6 @@ params = {
 
     "results_dir": "./results/ablation_3",
 
-    "num_runs": 1,
-    "seed": 11,
+    "num_runs": 2,
+    "seed": 11
 }

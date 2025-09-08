@@ -10,7 +10,7 @@ params = {
     "hypernet_embeddings_dim": 128,
     "layers_to_use_hypernet": [11],
     "hypernet_use_on_value_matrix": True,
-    "hypernet_with_embedding_input_only": False,
+    "hypernet_with_embedding_input_only": True,
     "hypernet_large_model": False,
     "hypernet_use_fixed_A": False,
 
@@ -18,7 +18,7 @@ params = {
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
 
-    "forward_pass_reps": 1,
+    "forward_pass_reps": 100,
 
     "output_dir": f"./outputs/hypernet",
     "eval_strategy": "epoch",
