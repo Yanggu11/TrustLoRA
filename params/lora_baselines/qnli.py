@@ -5,6 +5,10 @@ params = {
 
     "lora_r": 8,
     "lora_alpha": 16,
+    "target_modules": ["query", "value"],
+    "layers_to_transform": list(range(12)),
+    "layers_pattern": "encoder.layer",
+    "forward_pass_reps": 1,
 
     "output_dir": f"./outputs/LoRA_baseline",
     "eval_strategy": "epoch",
@@ -27,5 +31,6 @@ params = {
 
     "results_dir": "./results/baselines",
 
-    "num_runs": 3
+    "num_runs": 3,
+    "seed": 11
 }
