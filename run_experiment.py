@@ -42,6 +42,7 @@ def run_experiment(params, id, device="cpu"):
     if params["use_hypernet"]:
         model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(
             model_name=params["model_name"],
+            use_peft=params["use_peft"],
             lora_r=params["lora_r"],
             lora_alpha=params["lora_alpha"],
             hypernet_layers=params["layers_to_use_hypernet"] if params["layers_to_use_hypernet"] else [11],
@@ -56,15 +57,18 @@ def run_experiment(params, id, device="cpu"):
             target_modules=params.get("target_modules", ["query", "value"]),
             layers_to_transform=params.get("layers_to_transform", list(range(12))),
             layers_pattern=params.get("layers_pattern", "encoder.layer"),
+            layers_to_freeze=params.get("layers_to_freeze", []),
         )
     else:
         model, tokenizer = get_baseline_roberta(
             model_name=params["model_name"],
+            use_peft=params["use_peft"],
             lora_r=params["lora_r"],
             lora_alpha=params["lora_alpha"],
             target_modules=params.get("target_modules", ["query", "value"]),
             layers_to_transform=params.get("layers_to_transform", list(range(12))),
             layers_pattern=params.get("layers_pattern", "encoder.layer"),
+            layers_to_freeze=params.get("layers_to_freeze", []),
         )
     encoded_dataset, metric = get_glue_dataset(
         params["glue_dataset_name"], tokenizer, truncation=True, max_length=512
@@ -139,9 +143,16 @@ def run_experiment(params, id, device="cpu"):
             ],
         )
 
+    # Printing trainable parameters
+    # for name, param in model.named_parameters():
+    #     if param.requires_grad:
+    #         print(str(name))
 
     trainer.evaluate()
     trainer.train()
+
+    if params["save_model_at_the_end"]:
+        trainer.save_model(training_args.output_dir)
 
 def load_params_from_file(file_path):
     spec = importlib.util.spec_from_file_location("params_module", file_path)
