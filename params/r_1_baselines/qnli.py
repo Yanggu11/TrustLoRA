@@ -2,14 +2,12 @@ params = {
     "glue_dataset_name": "qnli",
     "model_name": "roberta-base",
     "use_hypernet": False,
-
     "lora_r": 1,
     "lora_alpha": 16,
     "target_modules": ["query", "value"],
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
-
     "output_dir": f"./outputs/LoRA_baseline",
     "eval_strategy": "epoch",
     "eval_steps": 50,
@@ -28,9 +26,7 @@ params = {
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": True,
-
-    "results_dir": "./results/baselines",
-
+    "results_dir": "./results/r_1_baselines/cola_baseline_with_r_1",
     "num_runs": 3,
-    "seed": 11
+    "seed": 11,
 }

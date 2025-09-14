@@ -3,7 +3,6 @@ params = {
     "glue_dataset_name": "cola",
     "model_name": "roberta-base",
     "use_hypernet": False,
-
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
     "lora_r": 1,
     "lora_alpha": 16,
@@ -11,7 +10,6 @@ params = {
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
-
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
     "output_dir": f"./outputs/LoRA_baseline",
     "eval_strategy": "epoch",
@@ -31,10 +29,8 @@ params = {
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": True,
-
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
-    "results_dir": "./results/baselines",
-
-    "num_runs": 3, # we will train this many times with this config, but seeds will be different
-    "seed": 11
+    "results_dir": "./results/r_1_baselines/cola_baseline_with_r_1",
+    "num_runs": 3,  # we will train this many times with this config, but seeds will be different
+    "seed": 11,
 }

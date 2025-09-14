@@ -2,16 +2,12 @@ params = {
     "glue_dataset_name": "cola",
     "model_name": "roberta-base",
     "use_hypernet": False,
-
     "lora_r": 8,
     "lora_alpha": 16,
-
     "target_modules": ["query", "value"],
     "layers_to_transform": list(range(8)),
     "layers_pattern": "encoder.layer",
-
     "forward_pass_reps": 1,
-
     "output_dir": f"./outputs/LoRA_baseline",
     "eval_strategy": "epoch",
     "eval_steps": 50,
@@ -30,9 +26,7 @@ params = {
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": True,
-
-    "results_dir": "./results/ablation_3",
-
+    "results_dir": "./results/r_1_baselines/baselines_without_layers/",
     "num_runs": 2,
-    "seed": 11
+    "seed": 11,
 }
