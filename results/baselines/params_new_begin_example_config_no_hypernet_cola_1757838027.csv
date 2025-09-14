@@ -1,2 +1,0 @@
-eval_loss,eval_model_preparation_time,eval_matthews_correlation,eval_ece,eval_runtime,eval_samples_per_second,eval_steps_per_second,epoch
-0.6637118458747864,0.0033,0.0,0.14863811763340995,18.1045,57.61,1.823,0
