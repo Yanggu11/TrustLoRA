@@ -144,6 +144,7 @@ def run_experiment(params, id, device="cpu"):
         )
 
     # Printing trainable parameters
+    # print("Trainable parameters:")
     # for name, param in model.named_parameters():
     #     if param.requires_grad:
     #         print(str(name))
