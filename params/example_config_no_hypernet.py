@@ -1,7 +1,7 @@
 params = {
     # most important, general params
     "glue_dataset_name": "cola",
-    "model_name": "roberta-base",
+    "model_name": "./pretrained_models/roberta-base-with-classifier_cola_1757839415/checkpoint-21440",
     "use_hypernet": False,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
     "layers_to_freeze": list(range(11)),
