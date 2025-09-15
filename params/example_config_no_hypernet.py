@@ -34,7 +34,6 @@ params = {
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/output_dir",
-    "save_model_at_the_end": False,  # in most cases we want to save the model at the end
     "num_runs": 3,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }

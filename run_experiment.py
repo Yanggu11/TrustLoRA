@@ -152,9 +152,6 @@ def run_experiment(params, id, device="cpu"):
     trainer.evaluate()
     trainer.train()
 
-    if params["save_model_at_the_end"]:
-        trainer.save_model(training_args.output_dir)
-
 def load_params_from_file(file_path):
     spec = importlib.util.spec_from_file_location("params_module", file_path)
     params_module = importlib.util.module_from_spec(spec)

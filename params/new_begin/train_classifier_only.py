@@ -48,7 +48,6 @@ params = {
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/roberta_base_with_classifier",
-    "save_model_at_the_end": True, # in most cases we want to save the model at the end
     "num_runs": 1,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }
