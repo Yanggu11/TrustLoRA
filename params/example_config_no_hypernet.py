@@ -4,13 +4,13 @@ params = {
     "model_name": "roberta-base",
     "use_hypernet": False,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
-    "layers_to_freeze": [],
+    "layers_to_freeze": list(range(11)),
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
     "use_peft": True,
     "lora_r": 1,
     "lora_alpha": 16,
-    "target_modules": ["query", "value"],
-    "layers_to_transform": list(range(12)),
+    "target_modules": ["query", "key", "value"],
+    "layers_to_transform": [11],
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
