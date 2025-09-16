@@ -27,7 +27,7 @@ params = {
     "lora_r": 1,
     "lora_alpha": 16,
     "target_modules": ["query", "key", "value"],
-    "layers_to_transform": "layer.11",
+    "layers_to_transform": [11],
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
