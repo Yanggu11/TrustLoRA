@@ -26,7 +26,7 @@ params = {
     "use_peft": True,
     "lora_r": 1,
     "lora_alpha": 16,
-    "target_modules": ["query", "key", "value"],
+    "target_modules": ["query", "value"],
     "layers_to_transform": [11],
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
