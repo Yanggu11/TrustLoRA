@@ -6,8 +6,8 @@ params = {
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
      "layers_to_freeze": [
         "embeddings",
-        "layer.0",
-        "layer.1",
+        "layer.0.",
+        "layer.1.",
         "layer.2",
         "layer.3",
         "layer.4",
