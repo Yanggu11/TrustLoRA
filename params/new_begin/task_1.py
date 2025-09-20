@@ -24,7 +24,7 @@ params = {
     ],
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
     "use_peft": True,
-    "lora_r": 1,
+    "lora_r": 2,
     "lora_alpha": 16,
     "target_modules": ["query", "value"],
     "layers_to_transform": [11],
