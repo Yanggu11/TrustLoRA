@@ -21,6 +21,7 @@ params = {
         "classifier.dense.bias",
         "classifier.out_proj.weight",
         "classifier.out_proj.bias",
+        "layer.11.attention.lora_A",
     ],
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
     "use_peft": True,
