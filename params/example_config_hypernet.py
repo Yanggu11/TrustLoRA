@@ -2,7 +2,7 @@ params = {
     # most important, general params
     "glue_dataset_name": "cola",
     "model_name": "roberta-base",
-    "use_hypernet": False,
+    "use_hypernet": True,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
     "layers_to_freeze": [],
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
@@ -13,11 +13,11 @@ params = {
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
     # hypernet params
-    "hypernet_use_batches": False,
+    "hypernet_use_batches": True,
     "hypernet_hidden_dim": 128,
     "hypernet_embeddings_dim": 128,
-    "layers_to_use_hypernet": [11],
-    "hypernet_use_on_value_matrix": False,  # by default we apply lora only on query matrix if this is set to False
+    "layers_to_use_hypernet": [9, 10, 11],
+    "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
     "hypernet_with_embedding_input_only": True,  # if False we concat matrix A and embedding as input to hypernet
     "hypernet_large_model": False,  # if True hypernet has 4 layers, 2 layers otherwise
     "hypernet_use_fixed_A": False,  # if False matrix A is randomly drawn from kaiming normal distribution

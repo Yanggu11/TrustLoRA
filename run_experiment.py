@@ -40,7 +40,7 @@ def run_experiment(params, id, device="cpu"):
     random_seed = params["seed"] + id if params["seed"] else id
     set_global_seed(random_seed)
 
-    if params["use_hypernet"]:
+    if params["use_hypernet"] and params["use_hypernet"]:
         model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(
             model_name=params["model_name"],
             use_peft=params["use_peft"],
@@ -164,10 +164,10 @@ def run_experiment(params, id, device="cpu"):
         )
 
     # Printing trainable parameters
-    # print("Trainable parameters:")
-    # for name, param in model.named_parameters():
-    #     if param.requires_grad:
-    #         print(str(name))
+    print("Trainable parameters:")
+    for name, param in model.named_parameters():
+        if param.requires_grad:
+            print(str(name))
 
     trainer.evaluate()
     trainer.train()

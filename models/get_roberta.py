@@ -74,7 +74,9 @@ def get_hypernet_on_last_layer_roberta(
         num_of_embeddings=2 * len(hypernet_layers) if use_on_value_matrix else len(hypernet_layers),
         embedding_dim=hypernet_embeddings_dim,
         embedding_input_only=hypernet_with_embedding_input_only,
-        large_model=use_large_model
+        large_model=use_large_model,
+        use_batches=hypernet_use_batches,
+        use_fixed_A=use_fixed_A
     )
     if use_peft:
         peft_config = LoraConfig(
@@ -94,7 +96,7 @@ def get_hypernet_on_last_layer_roberta(
     for idx, layer_id in enumerate(hypernet_layers):
 
         dynamic_lora_layers.append(DynamicLoRALayer(
-            base_hidden_size, lora_r, hypernet, layer_id=idx, use_fixed_A=use_fixed_A, hypernet_use_batches=hypernet_use_batches
+            base_hidden_size, lora_r, hypernet, layer_id=idx, hypernet_use_batches=hypernet_use_batches
         ))
 
         adapter_name = "default"
@@ -108,7 +110,7 @@ def get_hypernet_on_last_layer_roberta(
 
         if use_on_value_matrix:
             dynamic_lora_layers.append(DynamicLoRALayer(
-                base_hidden_size, lora_r, hypernet, layer_id=idx + len(hypernet_layers), use_fixed_A=use_fixed_A
+                base_hidden_size, lora_r, hypernet, layer_id=idx + len(hypernet_layers), hypernet_use_batches=hypernet_use_batches
             ))
             model.roberta.encoder.layer[layer_id].attention.self.value.lora_A[
                 adapter_name
