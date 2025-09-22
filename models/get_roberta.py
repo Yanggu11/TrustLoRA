@@ -49,6 +49,7 @@ def get_hypernet_on_last_layer_roberta(
     use_peft=True,
     lora_r=1,
     lora_alpha=16,
+    hypernet_use_batches=False,
     hypernet_layers=[11],
     hypernet_hidden_dim=16,
     hypernet_embeddings_dim=8,
@@ -93,7 +94,7 @@ def get_hypernet_on_last_layer_roberta(
     for idx, layer_id in enumerate(hypernet_layers):
 
         dynamic_lora_layers.append(DynamicLoRALayer(
-            base_hidden_size, lora_r, hypernet, layer_id=idx, use_fixed_A=use_fixed_A
+            base_hidden_size, lora_r, hypernet, layer_id=idx, use_fixed_A=use_fixed_A, hypernet_use_batches=hypernet_use_batches
         ))
 
         adapter_name = "default"

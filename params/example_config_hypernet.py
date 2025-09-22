@@ -13,6 +13,7 @@ params = {
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
     # hypernet params
+    "hypernet_use_batches": False,
     "hypernet_hidden_dim": 128,
     "hypernet_embeddings_dim": 128,
     "layers_to_use_hypernet": [11],
