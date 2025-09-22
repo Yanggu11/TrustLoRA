@@ -4,7 +4,7 @@ params = {
     "model_name": "./pretrained_models/roberta-base-with-classifier_cola_1757839415/checkpoint-21440",
     "use_hypernet": False,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
-     "layers_to_freeze": [
+    "layers_to_freeze": [
         "embeddings",
         "layer.0.",
         "layer.1.",
@@ -21,6 +21,7 @@ params = {
         "classifier.dense.bias",
         "classifier.out_proj.weight",
         "classifier.out_proj.bias",
+        "layer.11.attention.lora_A",
     ],
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
     "use_peft": True,
@@ -50,7 +51,7 @@ params = {
     "optim": "adamw_torch",
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
-    "results_dir": "./results/output_dir",
+    "results_dir": "./results/new_begin",
     "num_runs": 3,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }

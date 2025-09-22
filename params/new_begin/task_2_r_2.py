@@ -21,6 +21,7 @@ params = {
         "classifier.dense.bias",
         "classifier.out_proj.weight",
         "classifier.out_proj.bias",
+        "layer.11.attention.lora_A",
     ],
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
     "use_peft": True,
@@ -50,7 +51,7 @@ params = {
     "optim": "adamw_torch",
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
-    "results_dir": "./results/output_dir",
+    "results_dir": "./results/new_begin",
     "num_runs": 3,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }
