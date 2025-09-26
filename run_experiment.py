@@ -2,6 +2,7 @@ import time
 
 import numpy as np
 import torch
+import wandb
 from transformers import Trainer, TrainingArguments, enable_full_determinism
 
 from data_loading.get_datasets import get_glue_dataset
@@ -40,7 +41,14 @@ def run_experiment(params, id, device="cpu"):
     random_seed = params["seed"] + id if params["seed"] else id
     set_global_seed(random_seed)
 
-    if params["use_hypernet"] and params["use_hypernet"]:
+    wandb.init(
+        project=f"roberta-hypernet-{params['glue_dataset_name']}",
+        name=f"run_{id}_{experiment_id}",
+        config=params,  
+        tags=["hypernet" if params["use_hypernet"] else "baseline"]
+    )
+
+    if params["use_hypernet"]:
         model, tokenizer, hypernet = get_hypernet_on_last_layer_roberta(
             model_name=params["model_name"],
             use_peft=params["use_peft"],
@@ -94,6 +102,9 @@ def run_experiment(params, id, device="cpu"):
             results["hyper_B_std"] = compute_B_std(hypernet, device=device)
             results["hyper_B_mean"] = compute_B_mean(hypernet, device=device)
 
+        if wandb.run is not None:
+            wandb.log({f"eval/{k}": v for k, v in results.items()})
+
         return results
 
     training_args = TrainingArguments(
@@ -117,6 +128,7 @@ def run_experiment(params, id, device="cpu"):
         optim=params["optim"],
         weight_decay=params["weight_decay"],
         disable_tqdm=params["disable_tqdm"],
+        report_to="wandb",
     )
 
     if params["forward_pass_reps"] > 1:
@@ -177,6 +189,8 @@ def run_experiment(params, id, device="cpu"):
 
     trainer.evaluate()
     trainer.train()
+
+    wandb.finish()
 
 def load_params_from_file(file_path):
     spec = importlib.util.spec_from_file_location("params_module", file_path)
