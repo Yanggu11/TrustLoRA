@@ -13,7 +13,7 @@ class DynamicLoRALayer(nn.Module):
         self.layer_id = layer_id
         self.hypernet_use_batches = hypernet_use_batches
 
-        self.weight = torch.tensor(0.0, dtype=self.hypernet.fc1.weight.dtype)
+        self.weight = torch.tensor(0.0, dtype=next(self.hypernet.parameters()).dtype)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 

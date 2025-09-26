@@ -7,7 +7,7 @@ from transformers import (
 )
 
 from models.dynamic_lora_layer import DynamicLoRALayer
-from models.hypernet import LoRAHyperNet
+from models.hypernet import LoRAHyperNet, LoRAHyperNetTransformer
 
 
 def get_baseline_roberta(
@@ -49,6 +49,9 @@ def get_hypernet_on_last_layer_roberta(
     use_peft=True,
     lora_r=1,
     lora_alpha=16,
+    hypernet_use_transformer=True,
+    hypernet_transformer_nhead=8,
+    hypernet_transformer_num_layers=2,
     hypernet_use_batches=False,
     hypernet_layers=[11],
     hypernet_hidden_dim=16,
@@ -66,18 +69,31 @@ def get_hypernet_on_last_layer_roberta(
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     base_hidden_size = model.config.hidden_size
-
-    hypernet = LoRAHyperNet(
-        base_hidden_size,
-        hypernet_hidden_dim,
-        lora_r,
-        num_of_embeddings=2 * len(hypernet_layers) if use_on_value_matrix else len(hypernet_layers),
-        embedding_dim=hypernet_embeddings_dim,
-        embedding_input_only=hypernet_with_embedding_input_only,
-        large_model=use_large_model,
-        use_batches=hypernet_use_batches,
-        use_fixed_A=use_fixed_A
-    )
+    if not hypernet_use_transformer:
+        hypernet = LoRAHyperNet(
+            base_hidden_size,
+            hypernet_hidden_dim,
+            lora_r,
+            num_of_embeddings=2 * len(hypernet_layers) if use_on_value_matrix else len(hypernet_layers),
+            embedding_dim=hypernet_embeddings_dim,
+            embedding_input_only=hypernet_with_embedding_input_only,
+            large_model=use_large_model,
+            use_batches=hypernet_use_batches,
+            use_fixed_A=use_fixed_A
+        )
+    else:
+        hypernet = LoRAHyperNetTransformer(
+            base_hidden_size,
+            hypernet_hidden_dim,
+            lora_r,
+            num_of_embeddings=2 * len(hypernet_layers) if use_on_value_matrix else len(hypernet_layers),
+            embedding_dim=hypernet_embeddings_dim,
+            embedding_input_only=hypernet_with_embedding_input_only,
+            nhead=hypernet_transformer_nhead,
+            num_layers=hypernet_transformer_num_layers,
+            use_batches=hypernet_use_batches,
+            use_fixed_A=use_fixed_A
+        )
     if use_peft:
         peft_config = LoraConfig(
             task_type=TaskType.SEQ_CLS,

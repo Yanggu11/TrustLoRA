@@ -12,13 +12,20 @@ params = {
     "target_modules": ["query", "value"],
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
+
     # hypernet params
-    "hypernet_use_batches": True,
+    "hypernet_use_transformer": False,
+    "hypernet_transformer_nhead": 8,
+    "hypernet_transformer_num_layers": 2,
+    "hypernet_noise_type_A": "replace", # "replace", "addative", "multiplikative"
+    "hypernet_noise_type_B": "replace", # "replace", "addative", "multiplikative"
+
+    "hypernet_use_batches": False,
     "hypernet_hidden_dim": 128,
     "hypernet_embeddings_dim": 128,
     "layers_to_use_hypernet": [9, 10, 11],
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
-    "hypernet_with_embedding_input_only": True,  # if False we concat matrix A and embedding as input to hypernet
+    "hypernet_with_embedding_input_only": False,  # if False we concat matrix A and embedding as input to hypernet
     "hypernet_large_model": False,  # if True hypernet has 4 layers, 2 layers otherwise
     "hypernet_use_fixed_A": False,  # if False matrix A is randomly drawn from kaiming normal distribution
     # in most cases this param is 1, it says how many time in a row we should run forward pass on single batch
@@ -41,7 +48,7 @@ params = {
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
-    "disable_tqdm": True,
+    "disable_tqdm": False,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/output_dir",
     "num_runs": 1,  # we will train this many times with this config, but seeds will be different
