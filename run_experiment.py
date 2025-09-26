@@ -53,10 +53,13 @@ def run_experiment(params, id, device="cpu"):
             hypernet_layers=params["layers_to_use_hypernet"] if params["layers_to_use_hypernet"] else [11],
             hypernet_hidden_dim=params["hypernet_hidden_dim"],
             hypernet_embeddings_dim=params["hypernet_embeddings_dim"],
+            hypernet_noise_type_A=params["hypernet_noise_type_A"],
+            hypernet_noise_type_B=params["hypernet_noise_type_B"],
             use_on_value_matrix=params["hypernet_use_on_value_matrix"],
             hypernet_with_embedding_input_only=params[
                 "hypernet_with_embedding_input_only"
             ],
+            hypernet_noise_alpha=params["hypernet_noise_alpha"],
             use_large_model=params["hypernet_large_model"],
             use_fixed_A=params["hypernet_use_fixed_A"],
             target_modules=params.get("target_modules", ["query", "value"]),
