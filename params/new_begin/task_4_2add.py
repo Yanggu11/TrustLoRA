@@ -58,6 +58,9 @@ params = {
     "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
+        "hypernet_noise_type_A": "add",  
+        "hypernet_noise_type_B": "add",  
+        "hypernet_noise_alpha": 0.5,      
     "optim": "adamw_torch",
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
