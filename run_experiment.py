@@ -9,6 +9,7 @@ from data_loading.get_datasets import get_glue_dataset
 from evaluation.metrics import compute_B_mean, compute_B_std, compute_ece
 from evaluation.metrics_trainer_callback import SaveMetricsCallback
 from evaluation.forward_pass_repetition_data_collator import SimpleGradientAccumulationTrainer
+from evaluation.batch_generation_trainer import BatchedHypernetTrainer
 from models.get_roberta import get_baseline_roberta, get_hypernet_on_last_layer_roberta
 
 import argparse
@@ -53,13 +54,20 @@ def run_experiment(params, id, device="cpu"):
             use_peft=params["use_peft"],
             lora_r=params["lora_r"],
             lora_alpha=params["lora_alpha"],
+            hypernet_use_transformer=params["hypernet_use_transformer"],
+            hypernet_transformer_nhead=params["hypernet_transformer_nhead"],
+            hypernet_transformer_num_layers=params["hypernet_transformer_num_layers"],
+            hypernet_use_batches=params["hypernet_use_batches"],
             hypernet_layers=params["layers_to_use_hypernet"] if params["layers_to_use_hypernet"] else [11],
             hypernet_hidden_dim=params["hypernet_hidden_dim"],
             hypernet_embeddings_dim=params["hypernet_embeddings_dim"],
+            hypernet_noise_type_A=params["hypernet_noise_type_A"],
+            hypernet_noise_type_B=params["hypernet_noise_type_B"],
             use_on_value_matrix=params["hypernet_use_on_value_matrix"],
             hypernet_with_embedding_input_only=params[
                 "hypernet_with_embedding_input_only"
             ],
+            hypernet_noise_alpha=params["hypernet_noise_alpha"],
             use_large_model=params["hypernet_large_model"],
             use_fixed_A=params["hypernet_use_fixed_A"],
             target_modules=params.get("target_modules", ["query", "value"]),
@@ -124,6 +132,8 @@ def run_experiment(params, id, device="cpu"):
     )
 
     if params["forward_pass_reps"] > 1:
+        if params["hypernet_use_batches"]:
+            print("WARNING!!!! The parameter ['hypernet_use_batches'] is not used!")
         trainer = SimpleGradientAccumulationTrainer(
             model=model,
             args=training_args,
@@ -138,6 +148,22 @@ def run_experiment(params, id, device="cpu"):
                 ),
             ],
             accumulation_steps=params["forward_pass_reps"],
+        )
+    elif params["hypernet_use_batches"]:
+        trainer = BatchedHypernetTrainer(
+            model=model,
+            args=training_args,
+            train_dataset=encoded_dataset["train"],
+            eval_dataset=encoded_dataset["validation"],
+            processing_class=tokenizer,
+            compute_metrics=compute_metrics,
+            callbacks=[
+                SaveMetricsCallback(
+                    params["results_dir"],
+                    f"{params['results_filename']}_{params['glue_dataset_name']}_{experiment_id}.csv",
+                ),
+            ],
+            hypernet=hypernet,
         )
     else:
         trainer = Trainer(
@@ -156,10 +182,10 @@ def run_experiment(params, id, device="cpu"):
         )
 
     # Printing trainable parameters
-    # print("Trainable parameters:")
-    # for name, param in model.named_parameters():
-    #     if param.requires_grad:
-    #         print(str(name))
+    print("Trainable parameters:")
+    for name, param in model.named_parameters():
+        if param.requires_grad:
+            print(str(name))
 
     trainer.evaluate()
     trainer.train()

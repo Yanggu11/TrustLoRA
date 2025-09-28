@@ -29,8 +29,11 @@ def compute_B_std(hypernet, device="cuda"):
         Bs = []
         num_of_matrices = 5
         for _ in range(num_of_matrices):
-            A = torch.randn((hypernet.input_dim, hypernet.lora_r)).to(device)
-            B = hypernet(A, 0)  # [hidden, r]
+            if not hypernet.use_batches:
+                _, B = hypernet(0, device)  # [hidden, r]
+            else:
+                hypernet.precompute(device)
+                _, B = hypernet.use_precomputed(0)
             Bs.append(B.cpu().numpy())
         Bs = np.stack(Bs)  # shape: [num_of_matrices, hidden, r]
         std_per_batch_element = np.std(
@@ -45,8 +48,11 @@ def compute_B_mean(hypernet, device="cuda"):
         Bs = []
         num_of_matrices = 5
         for _ in range(num_of_matrices):
-            A = torch.randn((hypernet.input_dim, hypernet.lora_r)).to(device)
-            B = hypernet(A, 0)  # [hidden, r]
+            if not hypernet.use_batches:
+                _, B = hypernet(0, device)  # [hidden, r]
+            else:
+                hypernet.precompute(device)
+                _, B = hypernet.use_precomputed(0)
             Bs.append(B.cpu().numpy())
         Bs = np.stack(Bs)  # shape: [num_of_matrices, hidden, r]
         mean_per_batch_element = np.mean(
