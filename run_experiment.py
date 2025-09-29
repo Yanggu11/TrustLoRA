@@ -42,10 +42,9 @@ def run_experiment(params, id, device="cpu"):
     set_global_seed(random_seed)
 
     wandb.init(
-        project=f"roberta-hypernet-{params['glue_dataset_name']}",
-        name=f"run_{id}_{experiment_id}",
-        config=params,  
-        tags=["hypernet" if params["use_hypernet"] else "baseline"]
+        name=f"{params['glue_dataset_name']}_{id}_{experiment_id}",
+        config=params,
+        tags=["hypernet" if params["use_hypernet"] else "baseline", params["glue_dataset_name"], f"run_{id}"]
     )
 
     if params["use_hypernet"]:
