@@ -41,7 +41,7 @@ params = {
     "hypernet_use_batches": True,
     "hypernet_hidden_dim": 128,
     "hypernet_embeddings_dim": 128,
-    "layers_to_use_hypernet": [9, 10, 11],
+    "layers_to_use_hypernet": [11],
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
     "hypernet_with_embedding_input_only": False,  # if False we concat matrix A and embedding as input to hypernet
     "hypernet_large_model": False,  # if True hypernet has 4 layers, 2 layers otherwise
