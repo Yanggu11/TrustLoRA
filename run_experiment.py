@@ -6,10 +6,10 @@ import wandb
 from transformers import Trainer, TrainingArguments, enable_full_determinism
 
 from data_loading.get_datasets import get_glue_dataset
-from evaluation.metrics import compute_B_mean, compute_B_std, compute_ece
-from evaluation.metrics_trainer_callback import SaveMetricsCallback
-from evaluation.forward_pass_repetition_data_collator import SimpleGradientAccumulationTrainer
-from evaluation.batch_generation_trainer import BatchedHypernetTrainer
+from utils.metrics import compute_B_mean, compute_B_std, compute_ece
+from utils.metrics_trainer_callback import SaveMetricsCallback
+from utils.forward_pass_repetition_data_collator import SimpleGradientAccumulationTrainer
+from utils.batch_generation_trainer import BatchedHypernetTrainer
 from models.get_roberta import get_baseline_roberta, get_hypernet_on_last_layer_roberta
 
 import argparse

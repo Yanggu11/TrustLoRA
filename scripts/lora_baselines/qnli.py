@@ -5,8 +5,8 @@ import torch
 from transformers import Trainer, TrainingArguments
 
 from data_loading.get_datasets import get_glue_dataset
-from evaluation.metrics import compute_ece
-from evaluation.metrics_trainer_callback import SaveMetricsCallback
+from utils.metrics import compute_ece
+from utils.metrics_trainer_callback import SaveMetricsCallback
 from models.get_roberta import get_baseline_roberta
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
