@@ -19,7 +19,8 @@ params = {
     "hypernet_transformer_num_layers": 2,
     "hypernet_noise_type_A": "add", # "replace", "add", "multiply"
     "hypernet_noise_type_B": "multiply", # "replace", "add", "multiply"
-    "hypernet_noise_alpha": 0.5,
+    "hypernet_reduce_noise_alpha": True,
+    "hypernet_noise_alpha": 1,
 
     "hypernet_use_batches": False,
     "hypernet_hidden_dim": 128,

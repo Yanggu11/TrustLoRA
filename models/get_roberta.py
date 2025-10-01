@@ -148,4 +148,4 @@ def get_hypernet_on_last_layer_roberta(
             if layer in str(name):
                 param.requires_grad = False
 
-    return model, tokenizer, hypernet
+    return model, tokenizer, hypernet, dynamic_lora_layers
