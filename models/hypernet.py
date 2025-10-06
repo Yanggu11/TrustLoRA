@@ -1,11 +1,12 @@
 import torch
 import torch.nn as nn
 import math
+from ..utils.one_hot_encoding import OneHotEncoder
 
 
 class LoRAHyperNet(nn.Module):
     def __init__(
-        self, input_dim, hidden_dim, lora_r, num_of_embeddings=2, embedding_dim=8,
+        self, input_dim, hidden_dim, lora_r, use_embedding=True, num_of_embeddings=2, embedding_dim=8,
         use_fixed_A=False, use_batches=True, embedding_input_only=False, large_model=False
     ):
         super().__init__()
@@ -18,6 +19,7 @@ class LoRAHyperNet(nn.Module):
         self.use_batches = use_batches
         self.embedding_input_only = embedding_input_only
         self.large_model = large_model
+        self.use_embedding = use_embedding
 
         if self.embedding_input_only:
             self.fc1 = nn.Linear(embedding_dim, hidden_dim)
@@ -27,11 +29,14 @@ class LoRAHyperNet(nn.Module):
         if self.large_model: 
             self.fc2 = nn.Linear(hidden_dim, hidden_dim)
             self.fc3 = nn.Linear(hidden_dim, hidden_dim)
-            self.fc4 = nn.Linear(hidden_dim, input_dim * lora_r)
+            self.fc4 = nn.Linear(hidden_dim, input_dim * lora_r) 
         else:
             self.fc2 = nn.Linear(hidden_dim, input_dim * lora_r)
 
-        self.embedding = nn.Embedding(num_of_embeddings, embedding_dim)
+        if self.use_embedding:
+            self.embedding = nn.Embedding(num_of_embeddings, embedding_dim)
+        else:
+            self.one_hot = OneHotEncoder(num_of_embeddings)
 
         if self.use_fixed_A or self.use_batches:
             self.A_matrices = [torch.empty((self.input_dim, self.lora_r)) for _ in range(num_of_embeddings)]
@@ -48,7 +53,11 @@ class LoRAHyperNet(nn.Module):
     def forward(self, layer_id, device="cpu"):
         layer_id = torch.tensor(layer_id).to(device)
 
-        layer_embedding = self.embedding(layer_id)
+        if self.use_embedding:
+            layer_embedding = self.embedding(layer_id)
+        else:
+            one_hot = self.one_hot.encode([layer_id])
+            layer_embedding = torch.tensor(one_hot, dtype=torch.float32, device=device).squeeze(0)
 
         if self.use_fixed_A:
             A = self.A_matrices[layer_id].to(device)
@@ -114,7 +123,7 @@ class LoRAHyperNet(nn.Module):
 
 class LoRAHyperNetTransformer(nn.Module):
     def __init__(
-        self, input_dim, hidden_dim, lora_r,
+        self, input_dim, hidden_dim, lora_r, use_embedding=True,
         num_of_embeddings=2, embedding_dim=8,
         use_fixed_A=False, use_batches=True, embedding_input_only=False,
         nhead=4, num_layers=2
@@ -128,8 +137,12 @@ class LoRAHyperNetTransformer(nn.Module):
         self.use_fixed_A = use_fixed_A
         self.use_batches = use_batches
         self.embedding_input_only = embedding_input_only
+        self.use_embedding = use_embedding
 
-        self.embedding = nn.Embedding(num_of_embeddings, embedding_dim)
+        if self.use_embedding:
+            self.embedding = nn.Embedding(num_of_embeddings, embedding_dim)
+        else:
+            self.one_hot = OneHotEncoder(num_of_embeddings)
 
         if embedding_input_only:
             token_dim = embedding_dim
@@ -165,8 +178,12 @@ class LoRAHyperNetTransformer(nn.Module):
     def forward(self, layer_id, device="cpu"):
         layer_id = torch.tensor(layer_id).to(device)
 
+        if self.use_embedding:
         # ! This need to be fixed, bc we also want to have separate embeddings for each rank
-        layer_embedding = self.embedding(layer_id)  # (embed_dim,)
+            layer_embedding = self.embedding(layer_id)  # (embed_dim,)
+        else:
+            one_hot = self.one_hot.encode([layer_id])
+            layer_embedding = torch.tensor(one_hot, dtype=torch.float32, device=device).squeeze(0)
 
         if self.use_fixed_A:
             A = self.A_matrices[layer_id].to(device)  # (in_dim, r)

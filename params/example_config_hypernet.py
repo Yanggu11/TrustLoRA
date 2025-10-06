@@ -14,6 +14,7 @@ params = {
     "layers_pattern": "encoder.layer",
 
     # hypernet params
+    "hypernet_use_embedding": True, # if False use one-hot encoding
     "hypernet_use_transformer": True,
     "hypernet_transformer_nhead": 8,
     "hypernet_transformer_num_layers": 2,
