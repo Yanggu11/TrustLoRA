@@ -54,6 +54,7 @@ def run_experiment(params, id, device="cpu"):
             use_peft=params["use_peft"],
             lora_r=params["lora_r"],
             lora_alpha=params["lora_alpha"],
+            hypernet_use_embedding=params["hypernet_use_embedding"],
             hypernet_use_transformer=params["hypernet_use_transformer"],
             hypernet_transformer_nhead=params["hypernet_transformer_nhead"],
             hypernet_transformer_num_layers=params["hypernet_transformer_num_layers"],
