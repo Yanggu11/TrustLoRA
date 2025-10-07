@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import math
-from ..utils.one_hot_encoding import OneHotEncoder
+from utils.one_hot_encoding import OneHotEncoder
 
 
 class LoRAHyperNet(nn.Module):
