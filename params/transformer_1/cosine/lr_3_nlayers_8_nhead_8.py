@@ -1,7 +1,7 @@
 params = {
     # general params
     "glue_dataset_name": "cola",
-    "model_name": "roberta-base", # here you need to adjust the path to the trained model
+    "model_name": "./pretrained_models/baseline_cola_1758138132/checkpoint-21440", # here you need to adjust the path to the trained model
     "use_hypernet": True,
 
     "layers_to_freeze": [
