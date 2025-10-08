@@ -43,7 +43,7 @@ def run_experiment(params, id, device="cpu"):
     set_global_seed(random_seed)
 
     wandb.init(
-        name=f"{params['glue_dataset_name']}_{id}_{experiment_id}",
+        name=f"{params['results_filename']}_{id}_{experiment_id}",
         config=params,
         tags=["hypernet" if params["use_hypernet"] else "baseline", params["glue_dataset_name"], f"run_{id}"]
     )
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     params = load_params_from_file(args.params)
     print("Loaded params:", params)
 
-    params["results_filename"] = args.params.replace(".py", "").replace(".", "").replace("/", "_")
+    params["results_filename"] = args.params.replace(".py", "").replace(".", "").replace("/", "_").replace("\\", "_")
     params["results_filename"] = params["results_filename"] if params["results_filename"][0] != "_" else params["results_filename"][1:]
 
 
