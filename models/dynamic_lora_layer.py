@@ -13,8 +13,8 @@ class DynamicLoRALayer(nn.Module):
         self.layer_id = layer_id
         self.hypernet_use_batches = hypernet_use_batches
 
-        self.initial_A = initial_A
-        self.initial_B = initial_B
+        self.register_buffer("initial_A", initial_A)
+        self.register_buffer("initial_B", initial_B)
 
         self.noise_type_A = noise_type_A
         self.noise_type_B = noise_type_B
