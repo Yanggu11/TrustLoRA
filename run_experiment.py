@@ -37,8 +37,6 @@ def set_global_seed(seed: int):
 
 def run_experiment(params, id, device="cpu"):
     print(f"=== Run {id} ==============")
-    hypernet = None  # Ensure variable is always defined
-    dynamic_lora_layers = None
 
     experiment_id = str(int(time.time()))
     random_seed = params["seed"] + id if params["seed"] else id
