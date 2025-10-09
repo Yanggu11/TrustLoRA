@@ -155,7 +155,7 @@ def run_experiment(params, id, device="cpu"):
             callbacks=callbacks,
             accumulation_steps=params["forward_pass_reps"],
         )
-    elif params["hypernet_use_batches"]:
+    elif params["hypernet_use_batches"] and params["use_hypernet"]:
         trainer = BatchedHypernetTrainer(
             model=model,
             args=training_args,
