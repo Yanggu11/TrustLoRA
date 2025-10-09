@@ -31,7 +31,7 @@ params = {
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
-    "output_dir": f"./pretrained_models/baseline",
+    "output_dir": f"./pretrained_models/baseline_model",
     "eval_strategy": "epoch",
     "eval_steps": 50,
     "save_strategy": "steps",
