@@ -40,8 +40,6 @@ class ReduceAlphaCallback(TrainerCallback):
 
     def on_step_end(self, args, state, control, **kwargs):
         """Ensure alpha is updated consistently at the end of each step."""
-        if not state.is_training:
-            return
 
         if self.current_step < self.num_training_steps:
             new_alpha = self._calculate_alpha()
