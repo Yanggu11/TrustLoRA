@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import PeftModel, LoraConfig, TaskType, get_peft_model
 from transformers import (
     RobertaForSequenceClassification,
     RobertaTokenizer,
@@ -12,6 +12,7 @@ from models.hypernet import LoRAHyperNet, LoRAHyperNetTransformer
 
 def get_baseline_roberta(
     model_name="roberta-base",
+    peft_model_name="",
     use_peft=False,
     lora_r=1,
     lora_alpha=16,
@@ -23,7 +24,7 @@ def get_baseline_roberta(
     model = RobertaForSequenceClassification.from_pretrained(model_name)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
-    if use_peft:
+    if use_peft and peft_model_name == "":
         peft_config = LoraConfig(
             task_type=TaskType.SEQ_CLS,
             inference_mode=False,
@@ -36,6 +37,13 @@ def get_baseline_roberta(
 
         model = get_peft_model(model, peft_config=peft_config)
 
+    elif use_peft:
+        model = PeftModel.from_pretrained(model, peft_model_name)
+        for name, param in model.named_parameters():
+            if "lora_" in str(name):
+                param.requires_grad = True
+
+
     for name, param in model.named_parameters():
         for layer in layers_to_freeze:
             if layer in str(name):
@@ -46,6 +54,7 @@ def get_baseline_roberta(
 
 def get_hypernet_on_last_layer_roberta(
     model_name="roberta-base",
+    peft_model_name="",
     use_peft=True,
     lora_r=1,
     lora_alpha=16,
@@ -69,10 +78,27 @@ def get_hypernet_on_last_layer_roberta(
     layers_pattern="encoder.layer",
     layers_to_freeze=[],
 ):
+    
     model = RobertaForSequenceClassification.from_pretrained(model_name)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     base_hidden_size = model.config.hidden_size
+
+    if use_peft and peft_model_name == "":
+        peft_config = LoraConfig(
+            task_type=TaskType.SEQ_CLS,
+            inference_mode=False,
+            r=lora_r,
+            lora_alpha=lora_alpha,
+            target_modules=target_modules,
+            layers_to_transform=layers_to_transform,
+            layers_pattern=layers_pattern,
+        )
+
+        model = get_peft_model(model, peft_config=peft_config)
+    elif use_peft:
+        model = PeftModel.from_pretrained(model, peft_model_name)
+
     if not hypernet_use_transformer:
         hypernet = LoRAHyperNet(
             base_hidden_size,
@@ -100,18 +126,6 @@ def get_hypernet_on_last_layer_roberta(
             use_batches=hypernet_use_batches,
             use_fixed_A=use_fixed_A
         )
-    if use_peft:
-        peft_config = LoraConfig(
-            task_type=TaskType.SEQ_CLS,
-            inference_mode=False,
-            r=lora_r,
-            lora_alpha=lora_alpha,
-            target_modules=target_modules,
-            layers_to_transform=layers_to_transform,
-            layers_pattern=layers_pattern,
-        )
-
-        model = get_peft_model(model, peft_config=peft_config)
 
     dynamic_lora_layers = []
 

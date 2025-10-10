@@ -51,6 +51,7 @@ def run_experiment(params, id, device="cpu"):
     if params["use_hypernet"]:
         model, tokenizer, hypernet, dynamic_lora_layers = get_hypernet_on_last_layer_roberta(
             model_name=params["model_name"],
+            peft_model_name=params["peft_model_name"] if "peft_model_name" in params.keys() else "",
             use_peft=params["use_peft"],
             lora_r=params["lora_r"],
             lora_alpha=params["lora_alpha"],
@@ -79,6 +80,7 @@ def run_experiment(params, id, device="cpu"):
     else:
         model, tokenizer = get_baseline_roberta(
             model_name=params["model_name"],
+            peft_model_name=params["peft_model_name"] if "peft_model_name" in params.keys() else "",
             use_peft=params["use_peft"],
             lora_r=params["lora_r"],
             lora_alpha=params["lora_alpha"],
@@ -138,7 +140,7 @@ def run_experiment(params, id, device="cpu"):
             f"{params['results_filename']}_{params['glue_dataset_name']}_{experiment_id}.csv",
         ),
     ]
-    if params["hypernet_reduce_noise_alpha"]:
+    if params["use_hypernet"] and params["hypernet_reduce_noise_alpha"]:
         num_of_training_steps = (len(encoded_dataset["train"]) // params["per_device_train_batch_size"]) * params["num_train_epochs"]
         callbacks.append(ReduceAlphaCallback(params["hypernet_noise_alpha"], dynamic_lora_layers, num_of_training_steps))
 
