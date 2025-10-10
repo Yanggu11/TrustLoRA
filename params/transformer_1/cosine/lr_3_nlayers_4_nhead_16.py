@@ -1,7 +1,8 @@
 params = {
     # general params
     "glue_dataset_name": "cola",
-    "model_name": "./pretrained_models/baseline_cola_1758138132/checkpoint-21440", # here you need to adjust the path to the trained model
+    "model_name": "./pretrained_models/roberta-base-with-classifier_cola_1757839415/checkpoint-21440",
+    "peft_model_name": "./pretrained_models/task_1_baseline_1760028520/checkpoint-5360",
     "use_hypernet": True,
 
     "layers_to_freeze": [
@@ -36,7 +37,7 @@ params = {
     "hypernet_noise_type_A": "add",
     "hypernet_noise_type_B": "add",
     "hypernet_reduce_noise_alpha": True,
-    "hypernet_noise_alpha": 1,             # TODO Mid
+    "hypernet_noise_alpha": 0.999,             # TODO Mid
     "hypernet_use_batches": True,
     "hypernet_hidden_dim": 256,            # TODO Mid
     "hypernet_embeddings_dim": 64,
