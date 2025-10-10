@@ -1,14 +1,13 @@
 params = {
     # general params
     "glue_dataset_name": "cola",
-    "model_name": "./pretrained_models/roberta-base-with-classifier_cola_1757839415/checkpoint-21440",
-    "peft_model_name": "./pretrained_models/task_1_baseline_1760028520/checkpoint-5360",
+    "model_name": "./pretrained_models/roberta-base-with-classifier_cola_1757839415/checkpoint-21440", # here you need to adjust the path to the trained model
     "use_hypernet": True,
 
     "layers_to_freeze": [
         "embeddings",
         "layer.0.",
-        "layer.1.",
+        "layer.1.", 
         "layer.2.",
         "layer.3",
         "layer.4",
