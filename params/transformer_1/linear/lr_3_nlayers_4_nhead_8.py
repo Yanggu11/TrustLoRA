@@ -18,10 +18,7 @@ params = {
         "layer.8",
         "layer.9",
         "layer.10",
-        "classifier.dense.weight",
-        "classifier.dense.bias",
-        "classifier.out_proj.weight",
-        "classifier.out_proj.bias",
+        "model.classifier"
     ],
 
     # lora params
