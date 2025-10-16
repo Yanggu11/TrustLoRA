@@ -31,13 +31,13 @@ params = {
 
     # hypernet params
     "hypernet_use_transformer": True,
-    "hypernet_transformer_nhead": 16,       # ! Important
-    "hypernet_transformer_num_layers": 2,  # ! Important
+    "hypernet_transformer_nhead": 8,       # ! Important
+    "hypernet_transformer_num_layers": 4,  # ! Important
     # "replace", "add", "multiply"
     "hypernet_noise_type_A": "add",
     "hypernet_noise_type_B": "add",
-    "hypernet_reduce_noise_alpha": False,
-    "hypernet_noise_alpha": 0,             # TODO Mid
+    "hypernet_reduce_noise_alpha": True,
+    "hypernet_noise_alpha": 0.999,             # TODO Mid
     "hypernet_use_batches": True,
     "hypernet_hidden_dim": 256,            # TODO Mid
     "hypernet_embeddings_dim": 64,
@@ -58,7 +58,7 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 1e-3,              # ! Important
+    "learning_rate": 0.0,              # ! Important
     "weight_decay": 0.1,                # TODO Mid
     "per_device_train_batch_size": 16,  # TODO Mid
     "per_device_eval_batch_size": 32,
