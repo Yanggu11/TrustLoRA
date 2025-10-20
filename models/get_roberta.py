@@ -35,6 +35,17 @@ def get_baseline_roberta(
         )
 
         model = get_peft_model(model, peft_config=peft_config)
+        # Ensure LoRA parameters are trainable
+        for name, param in model.named_parameters():
+            if "lora_" in name:
+                param.requires_grad = True
+
+    elif use_peft:
+        model = PeftModel.from_pretrained(model, peft_model_name)
+        for name, param in model.named_parameters():
+            if "lora_" in str(name):
+                param.requires_grad = True
+
 
     for name, param in model.named_parameters():
         for layer in layers_to_freeze:
@@ -73,6 +84,26 @@ def get_hypernet_on_last_layer_roberta(
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     base_hidden_size = model.config.hidden_size
+
+    if use_peft and peft_model_name == "":
+        peft_config = LoraConfig(
+            task_type=TaskType.SEQ_CLS,
+            inference_mode=False,
+            r=lora_r,
+            lora_alpha=lora_alpha,
+            target_modules=target_modules,
+            layers_to_transform=layers_to_transform,
+            layers_pattern=layers_pattern,
+        )
+
+        model = get_peft_model(model, peft_config=peft_config)
+        # Ensure LoRA parameters are trainable
+        for name, param in model.named_parameters():
+            if "lora_" in name:
+                param.requires_grad = True
+    elif use_peft:
+        model = PeftModel.from_pretrained(model, peft_model_name)
+
     if not hypernet_use_transformer:
         hypernet = LoRAHyperNet(
             base_hidden_size,
@@ -148,7 +179,14 @@ def get_hypernet_on_last_layer_roberta(
 
     for name, param in model.named_parameters():
         for layer in layers_to_freeze:
-            if layer in str(name):
+            if layer in str(name) and "lora_" not in name and "hypernet" not in name:
                 param.requires_grad = False
+
+    # Attach hypernet as a submodule so its parameters are included in model.parameters()
+    try:
+        model.hypernet = hypernet
+    except Exception:
+        # Non fatal exception
+        pass
 
     return model, tokenizer, hypernet, dynamic_lora_layers
