@@ -46,7 +46,7 @@ def get_baseline_roberta(
 
     for name, param in model.named_parameters():
         for layer in layers_to_freeze:
-            if layer in str(name) and "lora_" not in name and "hypernet" not in name:
+            if layer in str(name):
                 param.requires_grad = False
 
     return model, tokenizer
@@ -162,7 +162,7 @@ def get_hypernet_on_last_layer_roberta(
 
     for name, param in model.named_parameters():
         for layer in layers_to_freeze:
-            if layer in str(name) and "lora_" not in name and "hypernet" not in name:
+            if layer in str(name):
                 param.requires_grad = False
 
     return model, tokenizer, hypernet, dynamic_lora_layers
