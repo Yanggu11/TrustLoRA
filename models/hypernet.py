@@ -235,7 +235,7 @@ class LoRAHyperNetTransformer(nn.Module):
         Bs = self.out_proj(h).view(self.num_of_embeddings, self.lora_r, self.input_dim)
 
         self.A_matrices = [As[i].detach().clone() for i in range(self.num_of_embeddings)]
-        self.B_matrices = [Bs[i].detach().clone() for i in range(self.num_of_embeddings)]
+        self.B_matrices = [Bs[i] for i in range(self.num_of_embeddings)]
 
     def use_precomputed(self, layer_id):
         if self.A_matrices is None or self.B_matrices is None:
