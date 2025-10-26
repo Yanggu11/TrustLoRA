@@ -1,0 +1,2 @@
+eval_loss,eval_model_preparation_time,eval_matthews_correlation,eval_ece,eval_hyper_B_std,eval_hyper_B_mean,eval_runtime,eval_samples_per_second,eval_steps_per_second,epoch
+1.3756394386291504,0.0083,-0.04571157792373751,0.29284194240405487,4.137594711295378e-09,-0.0006641118670813739,12.3023,84.781,2.682,0

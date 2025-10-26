@@ -58,7 +58,7 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 0.0,              # ! Important
+    "learning_rate": 0.0000001,              # ! Important
     "weight_decay": 0.1,                # TODO Mid
     "per_device_train_batch_size": 16,  # TODO Mid
     "per_device_eval_batch_size": 32,
