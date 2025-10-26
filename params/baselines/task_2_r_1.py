@@ -4,7 +4,7 @@ params = {
     "model_name": "./pretrained_models/roberta-base-with-classifier_cola_1757839415/checkpoint-21440",
     "use_hypernet": False,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
-     "layers_to_freeze": [
+    "layers_to_freeze": [
         "embeddings",
         "layer.0.",
         "layer.1.",
@@ -17,11 +17,8 @@ params = {
         "layer.8",
         "layer.9",
         "layer.10",
-        "classifier.dense.weight",
-        "classifier.dense.bias",
-        "classifier.out_proj.weight",
-        "classifier.out_proj.bias",
-        "layer.11.attention.lora_A",
+        "model.classifier",
+        "lora_A",
     ],
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
     "use_peft": True,
@@ -32,7 +29,7 @@ params = {
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
-    "output_dir": f"./pretrained_models/baseline",
+    "output_dir": f"./pretrained_models/task_2_r_1",
     "eval_strategy": "epoch",
     "eval_steps": 50,
     "save_strategy": "steps",
@@ -44,14 +41,14 @@ params = {
     "per_device_train_batch_size": 16,
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 2,
-    "num_train_epochs": 80,
+    "num_train_epochs": 20,
     "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
-    "results_dir": "./results/new_begin",
-    "num_runs": 3,  # we will train this many times with this config, but seeds will be different
+    "results_dir": "./results/baselines_tasks",
+    "num_runs": 1,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }

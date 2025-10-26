@@ -17,10 +17,7 @@ params = {
         "layer.8",
         "layer.9",
         "layer.10",
-        "classifier.dense.weight",
-        "classifier.dense.bias",
-        "classifier.out_proj.weight",
-        "classifier.out_proj.bias",
+        "model.classifier"
     ],
 
     # lora params
@@ -53,7 +50,7 @@ params = {
     "forward_pass_reps": 1,
 
     # transformers trainer args
-    "output_dir": f"./pretrained_models/hypernet",
+    "output_dir": f"./pretrained_models/task_1_r_1",
     "eval_strategy": "epoch",
     "eval_steps": 5,
     "save_strategy": "steps",
@@ -73,7 +70,7 @@ params = {
     "disable_tqdm": True,
 
     # filenames and else
-    "results_dir": "./results/transformer_1",
+    "results_dir": "./results/baselines_tasks",
     "num_runs": 1, 
     "seed": 11,
 }
