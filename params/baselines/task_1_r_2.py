@@ -22,7 +22,7 @@ params = {
 
     # lora params
     "use_peft": True,
-    "lora_r": 1,
+    "lora_r": 2,
     "lora_alpha": 16,
     "target_modules": ["query", "value"],
     "layers_to_transform": [11],
