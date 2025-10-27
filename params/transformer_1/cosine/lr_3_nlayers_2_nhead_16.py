@@ -1,8 +1,8 @@
 params = {
     # general params
     "glue_dataset_name": "cola",
-    "model_name": "./pretrained_models/task_1_r_1_cola_1761514808/checkpoint-5360",
-    "peft_model_name": "./pretrained_models/task_1_baseline_1760028520/checkpoint-5360",
+    "model_name": "./pretrained_models/roberta-base-with-classifier_cola_1757839415",
+    "peft_model_name": "./pretrained_models/task_1_r_1_cola_1761514808/checkpoint-5360",
     "use_hypernet": True,
 
     "layers_to_freeze": [
