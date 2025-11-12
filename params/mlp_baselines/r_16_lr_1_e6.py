@@ -31,7 +31,7 @@ params = {
     "layers_to_use_hypernet": [11],
     "hypernet_use_on_value_matrix": True, 
     "hypernet_with_embedding_input_only": True,
-    "hypernet_use_fixed_A": False, 
+    "hypernet_use_fixed_A": True, 
     "hypernet_large_model": True,
 
     # in most cases this param is 1, it says how many time in a row we should run forward pass on single batch
