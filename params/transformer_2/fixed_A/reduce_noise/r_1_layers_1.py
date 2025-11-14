@@ -1,24 +1,10 @@
 params = {
     # general params
     "glue_dataset_name": "cola",
-    "model_name": "./pretrained_models/roberta-base-with-classifier_cola_1757839415",
-    "peft_model_name": "./pretrained_models/task_1_r_1_cola_1761514808/checkpoint-5360",
+    "model_name": "roberta-base", # here you need to adjust the path to the trained model
     "use_hypernet": True,
 
     "layers_to_freeze": [
-        "embeddings",
-        "layer.0.",
-        "layer.1.",
-        "layer.2.",
-        "layer.3",
-        "layer.4",
-        "layer.5",
-        "layer.6",
-        "layer.7",
-        "layer.8",
-        "layer.9",
-        "layer.10",
-        "model.classifier"
     ],
 
     # lora params
@@ -32,33 +18,33 @@ params = {
     # hypernet params
     "hypernet_use_transformer": True,
     "hypernet_transformer_nhead": 8,       # ! Important
-    "hypernet_transformer_num_layers": 4,  # ! Important
+    "hypernet_transformer_num_layers": 2,  # ! Important
     # "replace", "add", "multiply"
     "hypernet_noise_type_A": "add",
     "hypernet_noise_type_B": "add",
-    "hypernet_reduce_noise_alpha": False,
-    "hypernet_noise_alpha": 0,             # TODO Mid
+    "hypernet_reduce_noise_alpha": True,
+    "hypernet_noise_alpha": 0.99,             # TODO Mid
     "hypernet_use_batches": True,
-    "hypernet_hidden_dim": 512,            # TODO Mid
+    "hypernet_hidden_dim": 256,            # TODO Mid
     "hypernet_embeddings_dim": 64,
     "layers_to_use_hypernet": [11],
     "hypernet_use_on_value_matrix": True, 
-    "hypernet_with_embedding_input_only": False,
+    "hypernet_with_embedding_input_only": True,
     "hypernet_use_fixed_A": True, 
-    "hypernet_large_model": False,
+    "hypernet_large_model": True,
 
     # in most cases this param is 1, it says how many time in a row we should run forward pass on single batch
     "forward_pass_reps": 1,
 
     # transformers trainer args
-    "output_dir": f"./pretrained_models/transformer_2",
+    "output_dir": f"./pretrained_models/basic",
     "eval_strategy": "epoch",
     "eval_steps": 5,
     "save_strategy": "steps",
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 1e-3,              # ! Important
+    "learning_rate": 4e-4,              # ! Important
     "weight_decay": 0.1,                # TODO Mid
     "per_device_train_batch_size": 16,  # TODO Mid
     "per_device_eval_batch_size": 32,
@@ -71,7 +57,7 @@ params = {
     "disable_tqdm": True,
 
     # filenames and else
-    "results_dir": "./results/transformer_2",
+    "results_dir": "./results/basic",
     "num_runs": 1, 
     "seed": 11,
 }
