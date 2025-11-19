@@ -17,8 +17,8 @@ params = {
 
     # hypernet params
     "hypernet_use_transformer": True,
-    "hypernet_transformer_nhead": 8,       # ! Important
-    "hypernet_transformer_num_layers": 2,  # ! Important
+    "hypernet_transformer_nhead": 16,       # ! Important
+    "hypernet_transformer_num_layers": 4,  # ! Important
     # "replace", "add", "multiply"
     "hypernet_noise_type_A": "replace",
     "hypernet_noise_type_B": "replace",
