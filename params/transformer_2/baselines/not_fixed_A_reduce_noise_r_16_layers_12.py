@@ -2,24 +2,23 @@ params = {
     # general params
     "glue_dataset_name": "cola",
     "model_name": "roberta-base", # here you need to adjust the path to the trained model
-    "use_hypernet": False,
+    "use_hypernet": True,
 
     "layers_to_freeze": [
-        "lora_A",
     ],
-    
+
     # lora params
     "use_peft": True,
     "lora_r": 16,
     "lora_alpha": 16,
     "target_modules": ["query", "value"],
-    "layers_to_transform": [11],
+    "layers_to_transform": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     "layers_pattern": "encoder.layer",
 
     # hypernet params
     "hypernet_use_transformer": True,
-    "hypernet_transformer_nhead": 8,       # ! Important
-    "hypernet_transformer_num_layers": 2,  # ! Important
+    "hypernet_transformer_nhead": 16,       # ! Important
+    "hypernet_transformer_num_layers": 4,  # ! Important
     # "replace", "add", "multiply"
     "hypernet_noise_type_A": "add",
     "hypernet_noise_type_B": "add",
@@ -28,7 +27,7 @@ params = {
     "hypernet_use_batches": True,
     "hypernet_hidden_dim": 256,            # TODO Mid
     "hypernet_embeddings_dim": 64,
-    "layers_to_use_hypernet": [11],
+    "layers_to_use_hypernet": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     "hypernet_use_on_value_matrix": True, 
     "hypernet_with_embedding_input_only": True,
     "hypernet_use_fixed_A": True, 
@@ -38,7 +37,7 @@ params = {
     "forward_pass_reps": 1,
 
     # transformers trainer args
-    "output_dir": f"./pretrained_models/mlp_2",
+    "output_dir": f"./pretrained_models/basic",
     "eval_strategy": "epoch",
     "eval_steps": 5,
     "save_strategy": "steps",
@@ -58,7 +57,7 @@ params = {
     "disable_tqdm": True,
 
     # filenames and else
-    "results_dir": "./results/mlp_2",
-    "num_runs": 1, 
+    "results_dir": "./results/basic",
+    "num_runs": 3, 
     "seed": 11,
 }
