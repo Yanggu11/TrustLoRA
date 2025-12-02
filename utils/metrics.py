@@ -55,6 +55,7 @@ def compute_B_mean(hypernet, device="cuda"):
                 _, B = hypernet.use_precomputed(0)
             Bs.append(B.cpu().numpy())
         Bs = np.stack(Bs)  # shape: [num_of_matrices, hidden, r]
+        Bs = np.abs(Bs)
         mean_per_batch_element = np.mean(
             Bs.reshape(num_of_matrices, -1), axis=0
         )  # shape: [5]
