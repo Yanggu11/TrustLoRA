@@ -95,6 +95,18 @@ def run_experiment(params, id, device="cpu"):
             layers_pattern=params.get("layers_pattern", "encoder.layer"),
             layers_to_freeze=params.get("layers_to_freeze", []),
         )
+
+    # Custom optimizer with param groups
+    classification_head_lr = params.get("classification_head_lr", params["learning_rate"])
+    # Find classification head parameters
+    classifier_params = list(model.classifier.parameters()) if hasattr(model, "classifier") else []
+    other_params = [p for n, p in model.named_parameters() if not (hasattr(model, "classifier") and p in classifier_params)]
+    optimizer_grouped_parameters = []
+    if classifier_params:
+        optimizer_grouped_parameters.append({"params": classifier_params, "lr": classification_head_lr})
+    optimizer_grouped_parameters.append({"params": other_params, "lr": params["learning_rate"]})
+    optimizer = torch.optim.AdamW(optimizer_grouped_parameters, weight_decay=params["weight_decay"])
+    
     encoded_dataset, metric = get_glue_dataset(
         params["glue_dataset_name"], tokenizer, truncation=True, max_length=512
     )
@@ -137,7 +149,7 @@ def run_experiment(params, id, device="cpu"):
         optim=params["optim"],
         weight_decay=params["weight_decay"],
         disable_tqdm=params["disable_tqdm"],
-        report_to=[],
+        report_to=['wandb'],
     )
 
     callbacks=[
@@ -162,6 +174,7 @@ def run_experiment(params, id, device="cpu"):
             compute_metrics=compute_metrics,
             callbacks=callbacks,
             accumulation_steps=params["forward_pass_reps"],
+            optimizers=(optimizer, None),
         )
     elif params["use_hypernet"] and params["hypernet_use_batches"]:
         trainer = BatchedHypernetTrainer(
@@ -173,6 +186,7 @@ def run_experiment(params, id, device="cpu"):
             compute_metrics=compute_metrics,
             callbacks=callbacks,
             hypernet=hypernet,
+            optimizers=(optimizer, None),
         )
     else:
         trainer = Trainer(
@@ -183,6 +197,7 @@ def run_experiment(params, id, device="cpu"):
             processing_class=tokenizer,
             compute_metrics=compute_metrics,
             callbacks=callbacks,
+            optimizers=(optimizer, None),
         )
 
     # Printing trainable parameters
