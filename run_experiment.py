@@ -98,9 +98,12 @@ def run_experiment(params, id, device="cpu"):
 
     # Custom optimizer with param groups
     classification_head_lr = params.get("classification_head_lr", params["learning_rate"])
-    # Find classification head parameters
-    classifier_params = list(model.classifier.parameters()) if hasattr(model, "classifier") else []
-    other_params = [p for n, p in model.named_parameters() if not (hasattr(model, "classifier") and p in classifier_params)]
+    # Find classification head parameters by name
+    classifier_param_names = set()
+    if hasattr(model, "classifier"):
+        classifier_param_names = {f"classifier.{n}" for n, _ in model.classifier.named_parameters()}
+    classifier_params = [p for n, p in model.named_parameters() if n in classifier_param_names]
+    other_params = [p for n, p in model.named_parameters() if n not in classifier_param_names]
     optimizer_grouped_parameters = []
     if classifier_params:
         optimizer_grouped_parameters.append({"params": classifier_params, "lr": classification_head_lr})
