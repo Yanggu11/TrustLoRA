@@ -9,7 +9,7 @@ import torch
 import wandb
 from transformers import Trainer, TrainingArguments, enable_full_determinism
 
-from calibration_metrics import ece
+from calibration_metrics import ece, classwise_ece, mce, ace, thresholded_ece, thresholded_ace, brier_score
 from data_loading.get_datasets import get_glue_dataset
 from models.get_roberta import get_baseline_roberta, get_hypernet_on_last_layer_roberta
 from utils.alpha_callback import ReduceAlphaCallback
@@ -162,6 +162,12 @@ def run_experiment(params, id, device="cpu"):
         results = metric.compute(predictions=predictions, references=labels)
 
         results["ece"] = ece(probs, labels)
+        results["classwise_ece"] = classwise_ece(probs, labels)
+        results["mce"] = mce(probs, labels)
+        results["ace"] = ace(probs, labels)
+        results["thresholded_ece"] = thresholded_ece(probs, labels, threshold=0.001)
+        results["thresholded_ace"] = thresholded_ace(probs, labels, threshold=0.001)
+        results["brier_score"] = brier_score(probs, labels)
         if params["use_hypernet"]:
             results["hyper_B_std"] = compute_B_std(hypernet, device=device)
             results["hyper_B_mean"] = compute_B_mean(hypernet, device=device)
