@@ -5,8 +5,9 @@ import torch
 import wandb
 from transformers import Trainer, TrainingArguments, enable_full_determinism
 
+from calibration_metrics import ece
 from data_loading.get_datasets import get_glue_dataset
-from utils.metrics import compute_B_mean, compute_B_std, compute_ece
+from utils.metrics import compute_B_mean, compute_B_std
 from utils.metrics_trainer_callback import SaveMetricsCallback
 from utils.forward_pass_repetition_data_collator import SimpleGradientAccumulationTrainer
 from utils.batch_generation_trainer import BatchedHypernetTrainer
@@ -121,7 +122,7 @@ def run_experiment(params, id, device="cpu"):
         predictions = np.argmax(probs, axis=-1)
         results = metric.compute(predictions=predictions, references=labels)
 
-        results["ece"] = compute_ece(probs, labels)
+        results["ece"] = ece(probs, labels)
         if params["use_hypernet"]:
             results["hyper_B_std"] = compute_B_std(hypernet, device=device)
             results["hyper_B_mean"] = compute_B_mean(hypernet, device=device)
