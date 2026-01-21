@@ -9,7 +9,7 @@ import torch
 import wandb
 from transformers import Trainer, TrainingArguments, enable_full_determinism
 
-from calibration_metrics import ece, classwise_ece, mce, ace, thresholded_ece, thresholded_ace, brier_score
+from calibration_metrics import ece, classwise_ece, mce, ace, thresholded_ace, brier_score
 from data_loading.get_datasets import get_glue_dataset
 from models.get_roberta import get_baseline_roberta, get_hypernet_on_last_layer_roberta
 from utils.alpha_callback import ReduceAlphaCallback
