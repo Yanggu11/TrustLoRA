@@ -73,9 +73,6 @@ def classwise_ece(probabilities: np.ndarray, labels: np.ndarray, n_bins: int = 1
         >>> probs = np.array([[0.9, 0.1], [0.6, 0.4], [0.3, 0.7]])
         >>> labels = np.array([0, 0, 1])
         >>> cece_score = classwise_ece(probs, labels, n_bins=10)
-
-    Reference:
-        Kull et al., 2019: "Beyond temperature scaling: Obtaining well-calibrated multi-class probabilities with dirichlet calibration"
     """
     n_samples, n_classes = probabilities.shape
     bin_bounds = np.linspace(0, 1, n_bins + 1)
@@ -131,9 +128,6 @@ def mce(probabilities: np.ndarray, labels: np.ndarray, n_bins: int = 10) -> floa
         >>> probs = np.array([[0.9, 0.1], [0.6, 0.4], [0.3, 0.7]])
         >>> labels = np.array([0, 0, 1])
         >>> mce_score = mce(probs, labels, n_bins=10)
-
-    Reference:
-        Naeini et al., 2015: "Obtaining Well Calibrated Probabilities Using Bayesian Binning"
     """
     confidences = np.max(probabilities, axis=1)
     predictions = np.argmax(probabilities, axis=1)
@@ -184,9 +178,6 @@ def ace(probabilities: np.ndarray, labels: np.ndarray, n_bins: int = 10) -> floa
         >>> probs = np.array([[0.9, 0.1], [0.6, 0.4], [0.3, 0.7]])
         >>> labels = np.array([0, 0, 1])
         >>> ace_score = ace(probs, labels, n_bins=15)
-    
-    Reference:
-        Nixon et al., 2019: "Measuring Calibration in Deep Learning"
     """
     confidences = np.max(probabilities, axis=1)
     predictions = np.argmax(probabilities, axis=1)
@@ -306,10 +297,6 @@ def thresholded_ace(probabilities: np.ndarray, labels: np.ndarray, threshold: fl
         >>> probs = np.array([[0.9, 0.1], [0.6, 0.4], [0.3, 0.7]])
         >>> labels = np.array([0, 0, 1])
         >>> tace_score = thresholded_ace(probs, labels, threshold=0.01, n_bins=15)
-    
-    Note:
-        These predictions overlap with the predictions evaluated by ECE (all maximum values
-        per datapoint), leading them to have similar reactions to recalibration methods.
     """
 
     n_samples, n_classes = probabilities.shape
@@ -377,9 +364,6 @@ def brier_score(probabilities: np.ndarray, labels: np.ndarray) -> float:
         >>> probs = np.array([[0.9, 0.1], [0.6, 0.4], [0.3, 0.7]])
         >>> labels = np.array([0, 0, 1])
         >>> bs = brier_score(probs, labels)
-    
-    Reference:
-        Brier et al., 1950: "Verification of forecasts expressed in terms of probability"
     """
     n_samples, n_classes = probabilities.shape
     
