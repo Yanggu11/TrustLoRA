@@ -165,8 +165,9 @@ def run_experiment(params, id, device="cpu"):
         results["classwise_ece"] = classwise_ece(probs, labels)
         results["mce"] = mce(probs, labels)
         results["ace"] = ace(probs, labels)
-        results["thresholded_ece"] = thresholded_ece(probs, labels, threshold=0.001)
-        results["thresholded_ace"] = thresholded_ace(probs, labels, threshold=0.001)
+        results["thresholded_ace_01"] = thresholded_ace(probs, labels, threshold=0.01)
+        results["thresholded_ace_001"] = thresholded_ace(probs, labels, threshold=0.001)
+        results["thresholded_ace_0001"] = thresholded_ace(probs, labels, threshold=0.0001)
         results["brier_score"] = brier_score(probs, labels)
         if params["use_hypernet"]:
             results["hyper_B_std"] = compute_B_std(hypernet, device=device)
