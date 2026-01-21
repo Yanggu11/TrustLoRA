@@ -29,15 +29,13 @@ params = {
     "target_modules": ["query", "value"],
     "layers_to_transform": [11],
     "layers_pattern": "encoder.layer",
-
     # hypernet params
     "hypernet_use_transformer": True,
     "hypernet_transformer_nhead": 8,
     "hypernet_transformer_num_layers": 2,
-    "hypernet_noise_type_A": "multiply", # "replace", "add", "multiply"
-    "hypernet_noise_type_B": "add", # "replace", "add", "multiply"
+    "hypernet_noise_type_A": "multiply",  # "replace", "add", "multiply"
+    "hypernet_noise_type_B": "add",  # "replace", "add", "multiply"
     "hypernet_noise_alpha": 0.5,
-
     "hypernet_use_batches": True,
     "hypernet_hidden_dim": 128,
     "hypernet_embeddings_dim": 128,

@@ -12,17 +12,15 @@ params = {
     "target_modules": ["query", "value"],
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
-
     # hypernet params
-    "hypernet_use_embedding": True, # if False use one-hot encoding
+    "hypernet_use_embedding": True,  # if False use one-hot encoding
     "hypernet_use_transformer": True,
     "hypernet_transformer_nhead": 8,
     "hypernet_transformer_num_layers": 2,
-    "hypernet_noise_type_A": "add", # "replace", "add", "multiply"
-    "hypernet_noise_type_B": "multiply", # "replace", "add", "multiply"
+    "hypernet_noise_type_A": "add",  # "replace", "add", "multiply"
+    "hypernet_noise_type_B": "multiply",  # "replace", "add", "multiply"
     "hypernet_reduce_noise_alpha": True,
     "hypernet_noise_alpha": 1,
-
     "hypernet_use_batches": False,
     "hypernet_hidden_dim": 128,
     "hypernet_embeddings_dim": 128,

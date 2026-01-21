@@ -1,10 +1,7 @@
 import torch
 import torch.nn as nn
-from peft import PeftModel, LoraConfig, TaskType, get_peft_model
-from transformers import (
-    RobertaForSequenceClassification,
-    RobertaTokenizer,
-)
+from peft import LoraConfig, PeftModel, TaskType, get_peft_model
+from transformers import RobertaForSequenceClassification, RobertaTokenizer
 
 from models.dynamic_lora_layer import DynamicLoRALayer
 from models.hypernet import LoRAHyperNet, LoRAHyperNetTransformer
@@ -43,7 +40,6 @@ def get_baseline_roberta(
             if "lora_" in str(name):
                 param.requires_grad = True
 
-
     for name, param in model.named_parameters():
         for layer in layers_to_freeze:
             if layer in str(name):
@@ -70,7 +66,7 @@ def get_hypernet_on_last_layer_roberta(
     hypernet_noise_type_B="replace",
     hypernet_noise_alpha=0.5,
     use_on_value_matrix=True,
-    hypernet_with_embedding_input_only=False, #! in older versions of the code there is wihtout "_only"
+    hypernet_with_embedding_input_only=False,  #! in older versions of the code there is wihtout "_only"
     use_fixed_A=True,
     use_large_model=False,
     target_modules=["query", "value"],
@@ -78,7 +74,7 @@ def get_hypernet_on_last_layer_roberta(
     layers_pattern="encoder.layer",
     layers_to_freeze=[],
 ):
-    
+
     model = RobertaForSequenceClassification.from_pretrained(model_name)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
@@ -105,12 +101,16 @@ def get_hypernet_on_last_layer_roberta(
             hypernet_hidden_dim,
             lora_r,
             use_embedding=hypernet_use_embedding,
-            num_of_embeddings=2 * len(hypernet_layers) if use_on_value_matrix else len(hypernet_layers),
+            num_of_embeddings=(
+                2 * len(hypernet_layers)
+                if use_on_value_matrix
+                else len(hypernet_layers)
+            ),
             embedding_dim=hypernet_embeddings_dim,
             embedding_input_only=hypernet_with_embedding_input_only,
             large_model=use_large_model,
             use_batches=hypernet_use_batches,
-            use_fixed_A=use_fixed_A
+            use_fixed_A=use_fixed_A,
         )
     else:
         hypernet = LoRAHyperNetTransformer(
@@ -118,13 +118,17 @@ def get_hypernet_on_last_layer_roberta(
             hypernet_hidden_dim,
             lora_r,
             use_embedding=hypernet_use_embedding,
-            num_of_embeddings=2 * len(hypernet_layers) if use_on_value_matrix else len(hypernet_layers),
+            num_of_embeddings=(
+                2 * len(hypernet_layers)
+                if use_on_value_matrix
+                else len(hypernet_layers)
+            ),
             embedding_dim=hypernet_embeddings_dim,
             embedding_input_only=hypernet_with_embedding_input_only,
             nhead=hypernet_transformer_nhead,
             num_layers=hypernet_transformer_num_layers,
             use_batches=hypernet_use_batches,
-            use_fixed_A=use_fixed_A
+            use_fixed_A=use_fixed_A,
         )
 
     dynamic_lora_layers = []
@@ -133,12 +137,33 @@ def get_hypernet_on_last_layer_roberta(
 
         adapter_name = "default"
 
-        initial_A = model.roberta.encoder.layer[layer_id].attention.self.query.lora_A[adapter_name].weight.clone().reshape(base_hidden_size, -1)
-        initial_B = model.roberta.encoder.layer[layer_id].attention.self.query.lora_B[adapter_name].weight.clone().reshape(-1, base_hidden_size)
+        initial_A = (
+            model.roberta.encoder.layer[layer_id]
+            .attention.self.query.lora_A[adapter_name]
+            .weight.clone()
+            .reshape(base_hidden_size, -1)
+        )
+        initial_B = (
+            model.roberta.encoder.layer[layer_id]
+            .attention.self.query.lora_B[adapter_name]
+            .weight.clone()
+            .reshape(-1, base_hidden_size)
+        )
 
-        dynamic_lora_layers.append(DynamicLoRALayer(
-            base_hidden_size, lora_r, hypernet, layer_id=idx, hypernet_use_batches=hypernet_use_batches, initial_A=initial_A, initial_B=initial_B, noise_type_A=hypernet_noise_type_A, noise_type_B=hypernet_noise_type_B, noise_alpha=hypernet_noise_alpha
-        ))
+        dynamic_lora_layers.append(
+            DynamicLoRALayer(
+                base_hidden_size,
+                lora_r,
+                hypernet,
+                layer_id=idx,
+                hypernet_use_batches=hypernet_use_batches,
+                initial_A=initial_A,
+                initial_B=initial_B,
+                noise_type_A=hypernet_noise_type_A,
+                noise_type_B=hypernet_noise_type_B,
+                noise_alpha=hypernet_noise_alpha,
+            )
+        )
 
         model.roberta.encoder.layer[layer_id].attention.self.query.lora_A[
             adapter_name
@@ -148,11 +173,32 @@ def get_hypernet_on_last_layer_roberta(
         ] = nn.Identity()
 
         if use_on_value_matrix:
-            initial_A = model.roberta.encoder.layer[layer_id].attention.self.value.lora_A[adapter_name].weight.clone().reshape(base_hidden_size, -1)
-            initial_B = model.roberta.encoder.layer[layer_id].attention.self.value.lora_B[adapter_name].weight.clone().reshape(-1, base_hidden_size)
-            dynamic_lora_layers.append(DynamicLoRALayer(
-                base_hidden_size, lora_r, hypernet, layer_id=idx + len(hypernet_layers), hypernet_use_batches=hypernet_use_batches, initial_A=initial_A, initial_B=initial_B, noise_type_A=hypernet_noise_type_A, noise_type_B=hypernet_noise_type_B, noise_alpha=hypernet_noise_alpha
-            ))
+            initial_A = (
+                model.roberta.encoder.layer[layer_id]
+                .attention.self.value.lora_A[adapter_name]
+                .weight.clone()
+                .reshape(base_hidden_size, -1)
+            )
+            initial_B = (
+                model.roberta.encoder.layer[layer_id]
+                .attention.self.value.lora_B[adapter_name]
+                .weight.clone()
+                .reshape(-1, base_hidden_size)
+            )
+            dynamic_lora_layers.append(
+                DynamicLoRALayer(
+                    base_hidden_size,
+                    lora_r,
+                    hypernet,
+                    layer_id=idx + len(hypernet_layers),
+                    hypernet_use_batches=hypernet_use_batches,
+                    initial_A=initial_A,
+                    initial_B=initial_B,
+                    noise_type_A=hypernet_noise_type_A,
+                    noise_type_B=hypernet_noise_type_B,
+                    noise_alpha=hypernet_noise_alpha,
+                )
+            )
             model.roberta.encoder.layer[layer_id].attention.self.value.lora_A[
                 adapter_name
             ] = dynamic_lora_layers[-1]

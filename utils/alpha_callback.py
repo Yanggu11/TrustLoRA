@@ -2,7 +2,9 @@ from transformers import TrainerCallback
 
 
 class ReduceAlphaCallback(TrainerCallback):
-    def __init__(self, alpha: float, dynamic_lora_layers: list, num_training_steps: int):
+    def __init__(
+        self, alpha: float, dynamic_lora_layers: list, num_training_steps: int
+    ):
         """
         Args:
             alpha (float): Initial alpha value.
@@ -21,7 +23,9 @@ class ReduceAlphaCallback(TrainerCallback):
     def on_step_begin(self, args, state, control, **kwargs):
         """Reduce alpha linearly at each step."""
         if self.current_step < self.num_training_steps:
-            new_alpha = max(0.0, self.initial_alpha - self.alpha_decay * self.current_step)
+            new_alpha = max(
+                0.0, self.initial_alpha - self.alpha_decay * self.current_step
+            )
             for layer in self.dynamic_lora_layers:
                 layer.alpha = new_alpha
             self.current_step += 1

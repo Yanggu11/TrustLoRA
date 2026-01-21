@@ -1,13 +1,24 @@
+import math
+
 import torch
 import torch.nn as nn
-import math
+
 from utils.one_hot_encoding import OneHotEncoder
 
 
 class LoRAHyperNet(nn.Module):
     def __init__(
-        self, input_dim, hidden_dim, lora_r, use_embedding=True, num_of_embeddings=2, embedding_dim=8,
-        use_fixed_A=False, use_batches=True, embedding_input_only=False, large_model=False
+        self,
+        input_dim,
+        hidden_dim,
+        lora_r,
+        use_embedding=True,
+        num_of_embeddings=2,
+        embedding_dim=8,
+        use_fixed_A=False,
+        use_batches=True,
+        embedding_input_only=False,
+        large_model=False,
     ):
         super().__init__()
 
@@ -26,10 +37,10 @@ class LoRAHyperNet(nn.Module):
         else:
             self.fc1 = nn.Linear(lora_r * input_dim + embedding_dim, hidden_dim)
 
-        if self.large_model: 
+        if self.large_model:
             self.fc2 = nn.Linear(hidden_dim, hidden_dim)
             self.fc3 = nn.Linear(hidden_dim, hidden_dim)
-            self.fc4 = nn.Linear(hidden_dim, input_dim * lora_r) 
+            self.fc4 = nn.Linear(hidden_dim, input_dim * lora_r)
         else:
             self.fc2 = nn.Linear(hidden_dim, input_dim * lora_r)
 
@@ -39,14 +50,20 @@ class LoRAHyperNet(nn.Module):
             self.one_hot = OneHotEncoder(num_of_embeddings)
 
         if self.use_fixed_A or self.use_batches:
-            self.A_matrices = [torch.empty((self.input_dim, self.lora_r)) for _ in range(num_of_embeddings)]
+            self.A_matrices = [
+                torch.empty((self.input_dim, self.lora_r))
+                for _ in range(num_of_embeddings)
+            ]
             for A_matrix in self.A_matrices:
                 nn.init.kaiming_uniform_(A_matrix, a=math.sqrt(5))
         else:
             self.A_matrices = None
 
         if self.use_batches:
-            self.B_matrices = [torch.empty((self.lora_r, self.input_dim)) for _ in range(num_of_embeddings)]
+            self.B_matrices = [
+                torch.empty((self.lora_r, self.input_dim))
+                for _ in range(num_of_embeddings)
+            ]
         else:
             self.B_matrices = None
 
@@ -57,7 +74,9 @@ class LoRAHyperNet(nn.Module):
             layer_embedding = self.embedding(layer_id)
         else:
             one_hot = self.one_hot.encode([layer_id])
-            layer_embedding = torch.tensor(one_hot, dtype=torch.float32, device=device).squeeze(0)
+            layer_embedding = torch.tensor(
+                one_hot, dtype=torch.float32, device=device
+            ).squeeze(0)
 
         if self.use_fixed_A:
             A = self.A_matrices[layer_id].to(device)
@@ -88,9 +107,13 @@ class LoRAHyperNet(nn.Module):
         embeddings = self.embedding(layer_ids)  # (N, embedding_dim)
 
         if self.use_fixed_A:
-            As = torch.stack([A.to(device) for A in self.A_matrices], dim=0)  # (N, in_dim, r)
+            As = torch.stack(
+                [A.to(device) for A in self.A_matrices], dim=0
+            )  # (N, in_dim, r)
         else:
-            As = torch.empty((self.num_of_embeddings, self.input_dim, self.lora_r), device=device)
+            As = torch.empty(
+                (self.num_of_embeddings, self.input_dim, self.lora_r), device=device
+            )
             for i in range(self.num_of_embeddings):
                 nn.init.kaiming_uniform_(As[i], a=math.sqrt(5))
             self.A_matrices = [As[i] for i in range(self.num_of_embeddings)]
@@ -109,24 +132,37 @@ class LoRAHyperNet(nn.Module):
         else:
             Bs = self.fc2(h).view(self.num_of_embeddings, self.lora_r, self.input_dim)
 
-        self.A_matrices = [As[i].detach().clone() for i in range(self.num_of_embeddings)]
-        self.B_matrices = [Bs[i].detach().clone() for i in range(self.num_of_embeddings)]
+        self.A_matrices = [
+            As[i].detach().clone() for i in range(self.num_of_embeddings)
+        ]
+        self.B_matrices = [
+            Bs[i].detach().clone() for i in range(self.num_of_embeddings)
+        ]
 
     def use_precomputed(self, layer_id):
 
         if self.A_matrices is None or self.B_matrices is None:
-            raise RuntimeError("No precomputed matrices found. Call precompute() first.")
+            raise RuntimeError(
+                "No precomputed matrices found. Call precompute() first."
+            )
 
         return self.A_matrices[layer_id], self.B_matrices[layer_id]
-    
 
 
 class LoRAHyperNetTransformer(nn.Module):
     def __init__(
-        self, input_dim, hidden_dim, lora_r, use_embedding=True,
-        num_of_embeddings=2, embedding_dim=8,
-        use_fixed_A=False, use_batches=True, embedding_input_only=False,
-        nhead=4, num_layers=2
+        self,
+        input_dim,
+        hidden_dim,
+        lora_r,
+        use_embedding=True,
+        num_of_embeddings=2,
+        embedding_dim=8,
+        use_fixed_A=False,
+        use_batches=True,
+        embedding_input_only=False,
+        nhead=4,
+        num_layers=2,
     ):
         super().__init__()
 
@@ -164,14 +200,20 @@ class LoRAHyperNetTransformer(nn.Module):
         self.out_proj = nn.Linear(hidden_dim, output_dim)
 
         if self.use_fixed_A or self.use_batches:
-            self.A_matrices = [torch.empty((self.input_dim, self.lora_r)) for _ in range(num_of_embeddings)]
+            self.A_matrices = [
+                torch.empty((self.input_dim, self.lora_r))
+                for _ in range(num_of_embeddings)
+            ]
             for A_matrix in self.A_matrices:
                 nn.init.kaiming_uniform_(A_matrix, a=math.sqrt(5))
         else:
             self.A_matrices = None
 
         if self.use_batches:
-            self.B_matrices = [torch.empty((self.lora_r, self.input_dim)) for _ in range(num_of_embeddings)]
+            self.B_matrices = [
+                torch.empty((self.lora_r, self.input_dim))
+                for _ in range(num_of_embeddings)
+            ]
         else:
             self.B_matrices = None
 
@@ -179,11 +221,13 @@ class LoRAHyperNetTransformer(nn.Module):
         layer_id = torch.tensor(layer_id).to(device)
 
         if self.use_embedding:
-        # ! This need to be fixed, bc we also want to have separate embeddings for each rank
+            # ! This need to be fixed, bc we also want to have separate embeddings for each rank
             layer_embedding = self.embedding(layer_id)  # (embed_dim,)
         else:
             one_hot = self.one_hot.encode([layer_id])
-            layer_embedding = torch.tensor(one_hot, dtype=torch.float32, device=device).squeeze(0)
+            layer_embedding = torch.tensor(
+                one_hot, dtype=torch.float32, device=device
+            ).squeeze(0)
 
         if self.use_fixed_A:
             A = self.A_matrices[layer_id].to(device)  # (in_dim, r)
@@ -216,9 +260,13 @@ class LoRAHyperNetTransformer(nn.Module):
         embeddings = self.embedding(layer_ids)  # (N, embed_dim)
 
         if self.use_fixed_A:
-            As = torch.stack([A.to(device) for A in self.A_matrices], dim=0)  # (N, in_dim, r)
+            As = torch.stack(
+                [A.to(device) for A in self.A_matrices], dim=0
+            )  # (N, in_dim, r)
         else:
-            As = torch.empty((self.num_of_embeddings, self.input_dim, self.lora_r), device=device)
+            As = torch.empty(
+                (self.num_of_embeddings, self.input_dim, self.lora_r), device=device
+            )
             for i in range(self.num_of_embeddings):
                 nn.init.kaiming_uniform_(As[i], a=math.sqrt(5))
             self.A_matrices = [As[i] for i in range(self.num_of_embeddings)]
@@ -226,7 +274,9 @@ class LoRAHyperNetTransformer(nn.Module):
         if self.embedding_input_only:
             flat = embeddings  # (N, embed_dim)
         else:
-            flat = torch.cat([embeddings, As.view(self.num_of_embeddings, -1)], dim=1)  # (N, embed_dim + in_dim*r)
+            flat = torch.cat(
+                [embeddings, As.view(self.num_of_embeddings, -1)], dim=1
+            )  # (N, embed_dim + in_dim*r)
 
         tokens = self.token_proj(flat).unsqueeze(0)  # (1, N, hidden)
 
@@ -234,12 +284,15 @@ class LoRAHyperNetTransformer(nn.Module):
 
         Bs = self.out_proj(h).view(self.num_of_embeddings, self.lora_r, self.input_dim)
 
-        self.A_matrices = [As[i].detach().clone() for i in range(self.num_of_embeddings)]
+        self.A_matrices = [
+            As[i].detach().clone() for i in range(self.num_of_embeddings)
+        ]
         self.B_matrices = [Bs[i] for i in range(self.num_of_embeddings)]
 
     def use_precomputed(self, layer_id):
         if self.A_matrices is None or self.B_matrices is None:
-            raise RuntimeError("No precomputed matrices found. Call precompute() first.")
+            raise RuntimeError(
+                "No precomputed matrices found. Call precompute() first."
+            )
 
         return self.A_matrices[layer_id], self.B_matrices[layer_id]
-
