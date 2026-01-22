@@ -27,7 +27,7 @@ params = {
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 2,
     "num_train_epochs": 25,
-    "metric_for_best_model": "matthews_correlation",
+    "metric_for_best_model": "accuracy",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
