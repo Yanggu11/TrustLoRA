@@ -27,13 +27,13 @@ params = {
     "per_device_eval_batch_size": 8,
     "gradient_accumulation_steps": 2,
     "num_train_epochs": 10,
-    "metric_for_best_model": "matthews_correlation",
+    "metric_for_best_model": "accuracy",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
-    "results_dir": "./results/cola",
+    "results_dir": "./results/mnli",
     "num_runs": 1,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }
