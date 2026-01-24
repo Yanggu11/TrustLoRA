@@ -67,7 +67,7 @@ def get_hypernet_on_last_layer_roberta(
     hypernet_noise_alpha=0.5,
     use_on_value_matrix=True,
     hypernet_with_embedding_input_only=False,  #! in older versions of the code there is wihtout "_only"
-    use_fixed_A=True,
+    A_matrix="random",  # ["random", "fixed", "generated"]
     use_large_model=False,
     target_modules=["query", "value"],
     layers_to_transform=list(range(12)),
@@ -110,7 +110,7 @@ def get_hypernet_on_last_layer_roberta(
             embedding_input_only=hypernet_with_embedding_input_only,
             large_model=use_large_model,
             use_batches=hypernet_use_batches,
-            use_fixed_A=use_fixed_A,
+            hypernet_A_matrix=hypernet_A_matrix,
         )
     else:
         hypernet = LoRAHyperNetTransformer(

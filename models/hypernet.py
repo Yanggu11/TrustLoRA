@@ -15,7 +15,7 @@ class LoRAHyperNet(nn.Module):
         use_embedding=True,
         num_of_embeddings=2,
         embedding_dim=8,
-        use_fixed_A=False,
+        hypernet_A_matrix="random",
         use_batches=True,
         embedding_input_only=False,
         large_model=False,
@@ -26,7 +26,7 @@ class LoRAHyperNet(nn.Module):
         self.hidden_dim = hidden_dim
         self.input_dim = input_dim
         self.num_of_embeddings = num_of_embeddings
-        self.use_fixed_A = use_fixed_A
+        self.hypernet_A_matrix = hypernet_A_matrix
         self.use_batches = use_batches
         self.embedding_input_only = embedding_input_only
         self.large_model = large_model
@@ -49,7 +49,7 @@ class LoRAHyperNet(nn.Module):
         else:
             self.one_hot = OneHotEncoder(num_of_embeddings)
 
-        if self.use_fixed_A or self.use_batches:
+        if self.hypernet_A_matrix == "fixed" or self.use_batches:
             self.A_matrices = [
                 torch.empty((self.input_dim, self.lora_r))
                 for _ in range(num_of_embeddings)
@@ -78,7 +78,7 @@ class LoRAHyperNet(nn.Module):
                 one_hot, dtype=torch.float32, device=device
             ).squeeze(0)
 
-        if self.use_fixed_A:
+        if self.hypernet_A_matrix == "fixed":
             A = self.A_matrices[layer_id].to(device)
         else:
             A = torch.empty((self.input_dim, self.lora_r)).to(device)
@@ -106,7 +106,7 @@ class LoRAHyperNet(nn.Module):
         layer_ids = torch.arange(self.num_of_embeddings, device=device)
         embeddings = self.embedding(layer_ids)  # (N, embedding_dim)
 
-        if self.use_fixed_A:
+        if self.hypernet_A_matrix == "fixed":
             As = torch.stack(
                 [A.to(device) for A in self.A_matrices], dim=0
             )  # (N, in_dim, r)
@@ -158,7 +158,7 @@ class LoRAHyperNetTransformer(nn.Module):
         use_embedding=True,
         num_of_embeddings=2,
         embedding_dim=8,
-        use_fixed_A=False,
+        hypernet_A_matrix="random",
         use_batches=True,
         embedding_input_only=False,
         nhead=4,
@@ -170,7 +170,7 @@ class LoRAHyperNetTransformer(nn.Module):
         self.hidden_dim = hidden_dim
         self.input_dim = input_dim
         self.num_of_embeddings = num_of_embeddings
-        self.use_fixed_A = use_fixed_A
+        self.hypernet_A_matrix = hypernet_A_matrix
         self.use_batches = use_batches
         self.embedding_input_only = embedding_input_only
         self.use_embedding = use_embedding
@@ -199,7 +199,7 @@ class LoRAHyperNetTransformer(nn.Module):
 
         self.out_proj = nn.Linear(hidden_dim, output_dim)
 
-        if self.use_fixed_A or self.use_batches:
+        if self.hypernet_A_matrix == "fixed" or self.use_batches:
             self.A_matrices = [
                 torch.empty((self.input_dim, self.lora_r))
                 for _ in range(num_of_embeddings)
@@ -229,7 +229,7 @@ class LoRAHyperNetTransformer(nn.Module):
                 one_hot, dtype=torch.float32, device=device
             ).squeeze(0)
 
-        if self.use_fixed_A:
+        if self.hypernet_A_matrix == "fixed":
             A = self.A_matrices[layer_id].to(device)  # (in_dim, r)
         else:
             A = torch.empty((self.input_dim, self.lora_r), device=device)
@@ -259,7 +259,7 @@ class LoRAHyperNetTransformer(nn.Module):
         layer_ids = torch.arange(self.num_of_embeddings, device=device)
         embeddings = self.embedding(layer_ids)  # (N, embed_dim)
 
-        if self.use_fixed_A:
+        if self.hypernet_A_matrix == "fixed":
             As = torch.stack(
                 [A.to(device) for A in self.A_matrices], dim=0
             )  # (N, in_dim, r)

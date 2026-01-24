@@ -50,7 +50,7 @@ def run_experiment(params, id, device="cpu"):
         name=f"{params['results_filename']}_{id}_{experiment_id}",
         settings=wandb.Settings(_disable_stats=True),
         config={
-            "fixed_A": params.get("hypernet_use_fixed_A", False),
+            "fixed_A": params.get("hypernet_A_matrix", "random"),
             "reduce_noise": params.get("hypernet_reduce_noise_alpha", False),
             "lora_r": params.get("lora_r", 1),
             "layers_transformed": params.get("layers_to_transform", []),
@@ -100,7 +100,7 @@ def run_experiment(params, id, device="cpu"):
                 ],
                 hypernet_noise_alpha=params["hypernet_noise_alpha"],
                 use_large_model=params["hypernet_large_model"],
-                use_fixed_A=params["hypernet_use_fixed_A"],
+                A_matrix=params["hypernet_A_matrix"],
                 target_modules=params.get("target_modules", ["query", "value"]),
                 layers_to_transform=params.get("layers_to_transform", list(range(12))),
                 layers_pattern=params.get("layers_pattern", "encoder.layer"),
