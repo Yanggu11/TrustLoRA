@@ -10,7 +10,7 @@ params = {
     "hypernet_use_on_value_matrix": True,
     "hypernet_with_embedding_input_only": True,
     "hypernet_large_model": False,
-    "hypernet_use_fixed_A": False,
+    "hypernet_A_matrix": "random",
     "target_modules": ["query", "value"],
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
