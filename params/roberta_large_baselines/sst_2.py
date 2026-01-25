@@ -13,6 +13,7 @@ params = {
     "layers_to_transform": list(range(24)),  # all layers
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
+    "max_length": 128,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
     "output_dir": f"./pretrained_models/sst_baseline",
     "eval_strategy": "epoch",
@@ -21,7 +22,7 @@ params = {
     "save_steps": 10000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 5e-4,
+    "learning_rate": 4e-4,
     "weight_decay": 0.1,
     "per_device_train_batch_size": 4,
     "per_device_eval_batch_size": 8,
