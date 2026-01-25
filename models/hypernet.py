@@ -157,7 +157,7 @@ class LoRAHyperNet(nn.Module):
             Bs = out.view(self.num_of_embeddings, self.lora_r, self.input_dim)
             
         self.A_matrices = [
-            As[i].detach().clone() for i in range(self.num_of_embeddings)
+            As[i].detach().clone() if not self.hypernet_A_matrix == "generated" else As[i] for i in range(self.num_of_embeddings)
         ]
         self.B_matrices = [
             Bs[i] for i in range(self.num_of_embeddings)
@@ -194,7 +194,7 @@ class LoRAHyperNetTransformer(nn.Module):
         self.hidden_dim = hidden_dim
         self.input_dim = input_dim
         self.hypernet_A_matrix = hypernet_A_matrix
-        self.num_of_embeddings = num_of_embeddings if self.hypernet_A_matrix == "generated" else num_of_embeddings * 2
+        self.num_of_embeddings = num_of_embeddings if not self.hypernet_A_matrix == "generated" else num_of_embeddings * 2
         self.use_batches = use_batches
         self.embedding_input_only = embedding_input_only
         self.use_embedding = use_embedding
@@ -206,9 +206,9 @@ class LoRAHyperNetTransformer(nn.Module):
         )
 
         if self.use_embedding:
-            self.embedding = nn.Embedding(num_of_embeddings, embedding_dim)
+            self.embedding = nn.Embedding(self.num_of_embeddings, embedding_dim)
         else:
-            self.one_hot = OneHotEncoder(num_of_embeddings)
+            self.one_hot = OneHotEncoder(self.num_of_embeddings)
 
         if embedding_input_only:
             token_dim = embedding_dim
@@ -232,7 +232,7 @@ class LoRAHyperNetTransformer(nn.Module):
         if self.hypernet_A_matrix == "fixed" or self.use_batches:
             self.A_matrices = [
                 torch.empty((self.input_dim, self.lora_r))
-                for _ in range(num_of_embeddings)
+                for _ in range(self.num_of_embeddings)
             ]
             for A_matrix in self.A_matrices:
                 nn.init.kaiming_uniform_(A_matrix, a=math.sqrt(5))
@@ -242,7 +242,7 @@ class LoRAHyperNetTransformer(nn.Module):
         if self.use_batches:
             self.B_matrices = [
                 torch.empty((self.lora_r, self.input_dim))
-                for _ in range(num_of_embeddings)
+                for _ in range(self.num_of_embeddings)
             ]
         else:
             self.B_matrices = None
