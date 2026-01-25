@@ -1,6 +1,6 @@
 params = {
     # most important, general params
-    "glue_dataset_name": "qnli",
+    "glue_dataset_name": "mnli",
     "model_name": "roberta-large",
     "use_hypernet": False,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
@@ -13,15 +13,16 @@ params = {
     "layers_to_transform": list(range(24)),  # all layers
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
+    "max_length": 128,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
-    "output_dir": f"./pretrained_models/qnli_baseline",
+    "output_dir": f"./pretrained_models/cola_baseline",
     "eval_strategy": "epoch",
     "eval_steps": 50,
     "save_strategy": "steps",
     "save_steps": 10000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 2e-4,
+    "learning_rate": 4e-4,
     "weight_decay": 0.1,
     "per_device_train_batch_size": 4,
     "per_device_eval_batch_size": 8,
@@ -33,7 +34,7 @@ params = {
     "optim": "adamw_torch",
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
-    "results_dir": "./results/qnli",
+    "results_dir": "./results/mnli",
     "num_runs": 1,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }

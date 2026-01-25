@@ -151,7 +151,7 @@ def run_experiment(params, id, device="cpu"):
     )
 
     encoded_dataset, metric = get_glue_dataset(
-        params["glue_dataset_name"], tokenizer, truncation=True, max_length=512
+        params["glue_dataset_name"], tokenizer, truncation=True, max_length=params.get("max_length", 512)
     )
 
     def compute_metrics(eval_pred):
