@@ -110,7 +110,7 @@ def get_hypernet_on_last_layer_roberta(
             embedding_input_only=hypernet_with_embedding_input_only,
             large_model=use_large_model,
             use_batches=hypernet_use_batches,
-            hypernet_A_matrix=hypernet_A_matrix,
+            hypernet_A_matrix=A_matrix,
         )
     else:
         hypernet = LoRAHyperNetTransformer(
@@ -128,7 +128,7 @@ def get_hypernet_on_last_layer_roberta(
             nhead=hypernet_transformer_nhead,
             num_layers=hypernet_transformer_num_layers,
             use_batches=hypernet_use_batches,
-            use_fixed_A=use_fixed_A,
+            hypernet_A_matrix=A_matrix,
         )
 
     dynamic_lora_layers = []
