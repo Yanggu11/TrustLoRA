@@ -8,27 +8,27 @@ params = {
     # peft LoRA params (https://huggingface.co/docs/peft/main/en/package_reference/lora#peft.LoraConfig)
     "use_peft": True,
     "lora_r": 8,
-    "lora_alpha": 16,
+    "lora_alpha": 8,
     "target_modules": ["query", "value"],
     "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
     # hypernet params
     "hypernet_use_embedding": True,  # if False use one-hot encoding
-    "hypernet_use_transformer": True,
+    "hypernet_use_transformer": False, # !
     "hypernet_transformer_nhead": 8,
     "hypernet_transformer_num_layers": 2,
-    "hypernet_noise_type_A": "add",  # "replace", "add", "multiply"
-    "hypernet_noise_type_B": "multiply",  # "replace", "add", "multiply"
-    "hypernet_reduce_noise_alpha": True,
+    "hypernet_noise_type_A": "replace",  # "replace", "add", "multiply"
+    "hypernet_noise_type_B": "replace",  # "replace", "add", "multiply"
+    "hypernet_reduce_noise_alpha": False,
     "hypernet_noise_alpha": 1,
-    "hypernet_use_batches": False,
+    "hypernet_use_batches": True, # !
     "hypernet_hidden_dim": 128,
     "hypernet_embeddings_dim": 128,
-    "layers_to_use_hypernet": [9, 10, 11],
+    "layers_to_use_hypernet": list(range(12)),
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
-    "hypernet_with_embedding_input_only": False,  # if False we concat matrix A and embedding as input to hypernet
-    "hypernet_large_model": False,  # if True hypernet has 4 layers, 2 layers otherwise
-    "hypernet_A_matrix": "random",  # ["random", "fixed", "generated"]
+    "hypernet_with_embedding_input_only": True,  # if False we concat matrix A and embedding as input to hypernet
+    "hypernet_large_model": True,  # if True hypernet has 4 layers, 2 layers otherwise
+    "hypernet_A_matrix": "generated",  # ["random", "fixed", "generated"]
     # in most cases this param is 1, it says how many time in a row we should run forward pass on single batch
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
