@@ -94,6 +94,13 @@ def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
 
     encoded_dataset = dataset.map(tokenize_function, batched=True)
     encoded_dataset = encoded_dataset.rename_column("label", "labels")
+    
+    # MNLI has validation_matched and validation_mismatched instead of validation
+    # Rename validation_matched to validation for consistency with other tasks
+    if dataset_name.lower() == "mnli":
+        if "validation_matched" in encoded_dataset:
+            encoded_dataset["validation"] = encoded_dataset["validation_matched"]
+    
     encoded_dataset.set_format(
         "torch", columns=["input_ids", "attention_mask", "labels"]
     )
