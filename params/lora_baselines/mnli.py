@@ -14,7 +14,7 @@ params = {
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
-    "output_dir": f"./pretrained_models/mnli_baseline",
+    "output_dir": f"./pretrained_models/mnli_r_base",
     "eval_strategy": "epoch",
     "eval_steps": 50,
     "save_strategy": "steps",
@@ -27,7 +27,7 @@ params = {
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 1,
     "num_train_epochs": 30,
-    "metric_for_best_model": "ece",
+    "metric_for_best_model": "accuracy",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
