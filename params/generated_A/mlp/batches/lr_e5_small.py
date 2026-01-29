@@ -23,11 +23,11 @@ params = {
     "hypernet_noise_alpha": 1,
     "hypernet_use_batches": True, # !
     "hypernet_hidden_dim": 128,
-    "hypernet_embeddings_dim": 128,
+    "hypernet_embeddings_dim": 64,
     "layers_to_use_hypernet": list(range(12)),
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
     "hypernet_with_embedding_input_only": True,  # if False we concat matrix A and embedding as input to hypernet
-    "hypernet_large_model": True,  # if True hypernet has 4 layers, 2 layers otherwise
+    "hypernet_large_model": False,  # if True hypernet has 4 layers, 2 layers otherwise
     "hypernet_A_matrix": "generated",  # ["random", "fixed", "generated"]
     # in most cases this param is 1, it says how many time in a row we should run forward pass on single batch
     "forward_pass_reps": 1,
@@ -39,11 +39,11 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 4e-4,
+    "learning_rate": 4e-5,
     "weight_decay": 0.1,
-    "per_device_train_batch_size": 16,
+    "per_device_train_batch_size": 32,
     "per_device_eval_batch_size": 32,
-    "gradient_accumulation_steps": 2,
+    "gradient_accumulation_steps": 1,
     "num_train_epochs": 20,
     "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,
