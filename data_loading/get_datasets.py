@@ -6,13 +6,23 @@ def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
     def tokenize_function(examples):
         # Map GLUE subsets to their corresponding text field names
         single_sentence_tasks = {"cola", "sst2", "sst-2"}
-        pair_sentence_tasks_sentence12 = {"mnli", "mrpc", "rte", "wnli", "stsb"}
+        pair_sentence_tasks_premise_hypothesis = {"mnli"}
+        pair_sentence_tasks_sentence12 = {"mrpc", "rte", "wnli", "stsb"}
         pair_sentence_tasks_question12 = {"qqp"}
         pair_sentence_tasks_question_sentence = {"qnli"}
 
         if dataset_name.lower() in single_sentence_tasks:
             return tokenizer(
                 examples["sentence"],
+                truncation=truncation,
+                padding="max_length",
+                max_length=max_length,
+            )
+
+        if dataset_name.lower() in pair_sentence_tasks_premise_hypothesis:
+            return tokenizer(
+                examples["premise"],
+                examples["hypothesis"],
                 truncation=truncation,
                 padding="max_length",
                 max_length=max_length,
