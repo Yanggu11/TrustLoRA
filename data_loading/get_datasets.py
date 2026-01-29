@@ -91,6 +91,9 @@ def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
 
     dataset = load_dataset("glue", dataset_name)
     metric = evaluate.load("glue", dataset_name)
+    
+    # Get the number of labels from the dataset
+    num_labels = dataset["train"].features["label"].num_classes
 
     encoded_dataset = dataset.map(tokenize_function, batched=True)
     encoded_dataset = encoded_dataset.rename_column("label", "labels")
@@ -105,4 +108,4 @@ def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
         "torch", columns=["input_ids", "attention_mask", "labels"]
     )
 
-    return encoded_dataset, metric
+    return encoded_dataset, metric, num_labels
