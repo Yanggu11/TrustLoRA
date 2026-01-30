@@ -157,10 +157,12 @@ class LoRAHyperNet(nn.Module):
             Bs = out.view(self.num_of_embeddings, self.lora_r, self.input_dim)
             
         self.A_matrices = [
-            As[i].detach().clone() if not self.hypernet_A_matrix == "generated" else As[i] for i in range(self.num_of_embeddings)
+            As[i].detach().clone() if not self.hypernet_A_matrix == "generated" else As[i].clone()
+            for i in range(self.num_of_embeddings)
         ]
+
         self.B_matrices = [
-            Bs[i] for i in range(self.num_of_embeddings)
+            Bs[i].clone() for i in range(self.num_of_embeddings)
         ]
 
     def use_precomputed(self, layer_id):
@@ -318,12 +320,23 @@ class LoRAHyperNetTransformer(nn.Module):
         out = self.out_proj(h).view(self.num_of_embeddings, self.lora_r, self.input_dim)
 
         if self.hypernet_A_matrix == "generated":
-            self.A_matrices = [out[i].view(self.input_dim, self.lora_r) for i in range(self.num_of_embeddings//2)]
-            self.B_matrices = [out[i] for i in range(self.num_of_embeddings//2, self.num_of_embeddings)]
+            self.A_matrices = [
+                out[i].view(self.input_dim, self.lora_r).clone()  # ✅ clone!
+                for i in range(self.num_of_embeddings//2)
+            ]
+            self.B_matrices = [
+                out[i].clone()  # ✅ clone!
+                for i in range(self.num_of_embeddings//2, self.num_of_embeddings)
+            ]
         else:
-            self.A_matrices = [As[i].detach().clone() for i in range(self.num_of_embeddings)]
-            self.B_matrices = [out[i] for i in range(self.num_of_embeddings)]
-
+            self.A_matrices = [
+                As[i].detach().clone() 
+                for i in range(self.num_of_embeddings)
+            ]
+            self.B_matrices = [
+                out[i].clone()  # ✅ clone!
+                for i in range(self.num_of_embeddings)
+            ]
     def use_precomputed(self, layer_id):
         if self.A_matrices is None or self.B_matrices is None:
             raise RuntimeError(
