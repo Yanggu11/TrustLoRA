@@ -1,6 +1,10 @@
+import json
+import os
+
 import torch
 import torch.nn as nn
-from peft import LoraConfig, PeftModel, TaskType, get_peft_model
+from peft import LoraConfig, PeftModel, TaskType, get_peft_model, set_peft_model_state_dict
+from safetensors.torch import load_file
 from transformers import RobertaForSequenceClassification, RobertaTokenizer
 
 from models.dynamic_lora_layer import DynamicLoRALayer
@@ -36,7 +40,38 @@ def get_baseline_roberta(
         model = get_peft_model(model, peft_config=peft_config)
 
     elif use_peft:
-        model = PeftModel.from_pretrained(model, peft_model_name)
+        adapter_config_path = os.path.join(peft_model_name, "adapter_config.json")
+        if os.path.exists(adapter_config_path):
+            with open(adapter_config_path, 'r') as f:
+                adapter_config = json.load(f)
+            
+            peft_config = LoraConfig(
+                task_type=TaskType.SEQ_CLS,
+                inference_mode=False,
+                r=adapter_config.get("r", 8),
+                lora_alpha=adapter_config.get("lora_alpha", 16),
+                target_modules=adapter_config.get("target_modules", ["query", "value"]),
+                layers_to_transform=adapter_config.get("layers_to_transform", None),
+                layers_pattern=adapter_config.get("layers_pattern", None),
+            )
+            model = get_peft_model(model, peft_config=peft_config)
+            
+            adapter_weights_path = os.path.join(peft_model_name, "adapter_model.safetensors")
+            if os.path.exists(adapter_weights_path):
+                state_dict = load_file(adapter_weights_path)
+            else:
+                adapter_weights_path = os.path.join(peft_model_name, "adapter_model.bin")
+                state_dict = torch.load(adapter_weights_path, map_location='cpu')
+            
+            filtered_state_dict = {
+                k: v for k, v in state_dict.items() 
+                if not any(x in k for x in ['classifier', 'score', 'classification_head'])
+            }
+            
+            set_peft_model_state_dict(model, filtered_state_dict, adapter_name="default")
+        else:
+            model = PeftModel.from_pretrained(model, peft_model_name)
+        
         for name, param in model.named_parameters():
             if "lora_" in str(name):
                 param.requires_grad = True
