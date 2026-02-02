@@ -65,7 +65,7 @@ def get_baseline_roberta(
             
             filtered_state_dict = {
                 k: v for k, v in state_dict.items() 
-                if not any(x in k for x in ['classifier', 'score', 'classification_head'])
+                if not any(x in k for x in ['out_proj', 'score', 'classification_head'])
             }
             
             set_peft_model_state_dict(model, filtered_state_dict, adapter_name="default")
