@@ -2,6 +2,7 @@ params = {
     # most important, general params
     "glue_dataset_name": "rte",
     "model_name": "roberta-base",
+    "peft_model_name": "./pretrained_models/mnli_r_base_mnli_1769686375/checkpoint-736320",
     "use_hypernet": False,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
     "layers_to_freeze": [],
