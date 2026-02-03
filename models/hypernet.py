@@ -23,7 +23,7 @@ class LoRAHyperNet(nn.Module):
         super().__init__()
 
         self.lora_r = lora_r
-        self.hidden_dim = hidden_dim
+        self.hidden_dim = hidden_dim if isinstance(hidden_dim, list) else [hidden_dim] * 3
         self.input_dim = input_dim
         self.num_of_embeddings = num_of_embeddings
         self.hypernet_A_matrix = hypernet_A_matrix
@@ -39,19 +39,18 @@ class LoRAHyperNet(nn.Module):
         )
 
         if self.embedding_input_only:
-            self.fc1 = nn.Linear(embedding_dim, hidden_dim)
+            self.fc1 = nn.Linear(embedding_dim, hidden_dim[0])
         else:
-            self.fc1 = nn.Linear(lora_r * input_dim + embedding_dim, hidden_dim)
+            self.fc1 = nn.Linear(lora_r * input_dim + embedding_dim, hidden_dim[0])
 
         output_dim = input_dim * lora_r if self.hypernet_A_matrix != "generated" else 2 * input_dim * lora_r
 
         if self.large_model:
-            self.fc2 = nn.Linear(hidden_dim, hidden_dim)
-            self.fc3 = nn.Linear(hidden_dim, hidden_dim)
-            self.fc4 = nn.Linear(hidden_dim, output_dim)
+            self.fc2 = nn.Linear(hidden_dim[0], hidden_dim[1])
+            self.fc3 = nn.Linear(hidden_dim[1], hidden_dim[2])
+            self.fc4 = nn.Linear(hidden_dim[2], output_dim)
         else:
-            self.fc2 = nn.Linear(hidden_dim, output_dim)
-
+            self.fc2 = nn.Linear(hidden_dim[0], output_dim)
         if self.use_embedding:
             self.embedding = nn.Embedding(num_of_embeddings, embedding_dim)
         else:
