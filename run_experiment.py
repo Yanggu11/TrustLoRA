@@ -118,12 +118,10 @@ def run_experiment(params, id, device="cpu"):
     else:
         model, tokenizer = get_baseline_roberta(
             model_name=params["model_name"],
-            peft_model_name=(
-                params["peft_model_name"] if "peft_model_name" in params.keys() else ""
-            ),
+            peft_model_name=params.get("peft_model_name", ""),
             use_peft=params["use_peft"],
-            lora_r=params["lora_r"],
-            lora_alpha=params["lora_alpha"],
+            lora_r=params.get("lora_r", -1),
+            lora_alpha=params.get("lora_alpha", -1),
             target_modules=params.get("target_modules", ["query", "value"]),
             layers_to_transform=params.get("layers_to_transform", list(range(12))),
             layers_pattern=params.get("layers_pattern", "encoder.layer"),
