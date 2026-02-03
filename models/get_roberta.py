@@ -63,10 +63,14 @@ def get_baseline_roberta(
                 adapter_weights_path = os.path.join(peft_model_name, "adapter_model.bin")
                 state_dict = torch.load(adapter_weights_path, map_location='cpu')
             
-            filtered_state_dict = {
-                k: v for k, v in state_dict.items() 
-                if 'lora_' in k
-            }
+            filtered_state_dict = {}
+            for k, v in state_dict.items():
+                if 'lora_' in k:
+                    if '.lora_A.weight' in k and '.lora_A.default.weight' not in k:
+                        k = k.replace('.lora_A.weight', '.lora_A.default.weight')
+                    elif '.lora_B.weight' in k and '.lora_B.default.weight' not in k:
+                        k = k.replace('.lora_B.weight', '.lora_B.default.weight')
+                    filtered_state_dict[k] = v
             
             load_result = model.load_state_dict(filtered_state_dict, strict=False)
             print(f"Loaded LoRA weights. Missing keys: {len(load_result.missing_keys)}, Unexpected keys: {len(load_result.unexpected_keys)}")
