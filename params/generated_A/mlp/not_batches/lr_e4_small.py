@@ -14,16 +14,16 @@ params = {
     "layers_pattern": "encoder.layer",
     # hypernet params
     "hypernet_use_embedding": True,  # if False use one-hot encoding
-    "hypernet_use_transformer": True, # !
+    "hypernet_use_transformer": False, # !
     "hypernet_transformer_nhead": 8,
-    "hypernet_transformer_num_layers": 4,
+    "hypernet_transformer_num_layers": 2,
     "hypernet_noise_type_A": "replace",  # "replace", "add", "multiply"
     "hypernet_noise_type_B": "replace",  # "replace", "add", "multiply"
     "hypernet_reduce_noise_alpha": False,
     "hypernet_noise_alpha": 1,
-    "hypernet_use_batches": True, # !
+    "hypernet_use_batches": False, # !
     "hypernet_hidden_dim": 128,
-    "hypernet_embeddings_dim": 128,
+    "hypernet_embeddings_dim": 64,
     "layers_to_use_hypernet": list(range(12)),
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
     "hypernet_with_embedding_input_only": True,  # if False we concat matrix A and embedding as input to hypernet
@@ -53,5 +53,5 @@ params = {
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/output_dir",
     "num_runs": 1,  # we will train this many times with this config, but seeds will be different
-    "seed": 11,
+    "seed": 12,
 }

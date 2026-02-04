@@ -7,7 +7,7 @@ import time
 import numpy as np
 import torch
 import wandb
-from transformers import Trainer, TrainingArguments, enable_full_determinism
+from transformers import RobertaTokenizer, Trainer, TrainingArguments, enable_full_determinism
 
 from calibration_metrics import ece, classwise_ece, mce, ace, thresholded_ace, brier_score
 from data_loading.get_datasets import get_glue_dataset
@@ -62,6 +62,13 @@ def run_experiment(params, id, device="cpu"):
         ],
     )
 
+    # First, get num_labels from the dataset by loading it with a temporary tokenizer
+    temp_tokenizer = RobertaTokenizer.from_pretrained(params["model_name"])
+    encoded_dataset, metric, num_labels = get_glue_dataset(
+        params["glue_dataset_name"], temp_tokenizer, truncation=True, max_length=params.get("max_length", 512)
+    )
+    del temp_tokenizer  # Clean up temporary tokenizer
+
     if params["use_hypernet"]:
         model, tokenizer, hypernet, dynamic_lora_layers = (
             get_hypernet_on_last_layer_roberta(
@@ -105,21 +112,21 @@ def run_experiment(params, id, device="cpu"):
                 layers_to_transform=params.get("layers_to_transform", list(range(12))),
                 layers_pattern=params.get("layers_pattern", "encoder.layer"),
                 layers_to_freeze=params.get("layers_to_freeze", []),
+                num_labels=num_labels,
             )
         )
     else:
         model, tokenizer = get_baseline_roberta(
             model_name=params["model_name"],
-            peft_model_name=(
-                params["peft_model_name"] if "peft_model_name" in params.keys() else ""
-            ),
+            peft_model_name=params.get("peft_model_name", ""),
             use_peft=params["use_peft"],
-            lora_r=params["lora_r"],
-            lora_alpha=params["lora_alpha"],
+            lora_r=params.get("lora_r", -1),
+            lora_alpha=params.get("lora_alpha", -1),
             target_modules=params.get("target_modules", ["query", "value"]),
             layers_to_transform=params.get("layers_to_transform", list(range(12))),
             layers_pattern=params.get("layers_pattern", "encoder.layer"),
             layers_to_freeze=params.get("layers_to_freeze", []),
+            num_labels=num_labels,
         )
 
     # Custom optimizer with param groups
@@ -150,7 +157,8 @@ def run_experiment(params, id, device="cpu"):
         optimizer_grouped_parameters, weight_decay=params["weight_decay"]
     )
 
-    encoded_dataset, metric = get_glue_dataset(
+    # Re-tokenize the dataset with the actual model's tokenizer
+    encoded_dataset, metric, _ = get_glue_dataset(
         params["glue_dataset_name"], tokenizer, truncation=True, max_length=params.get("max_length", 512)
     )
 

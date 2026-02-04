@@ -23,7 +23,7 @@ class LoRAHyperNet(nn.Module):
         super().__init__()
 
         self.lora_r = lora_r
-        self.hidden_dim = hidden_dim
+        self.hidden_dim = hidden_dim if isinstance(hidden_dim, list) else [hidden_dim] * 3
         self.input_dim = input_dim
         self.num_of_embeddings = num_of_embeddings
         self.hypernet_A_matrix = hypernet_A_matrix
@@ -39,19 +39,18 @@ class LoRAHyperNet(nn.Module):
         )
 
         if self.embedding_input_only:
-            self.fc1 = nn.Linear(embedding_dim, hidden_dim)
+            self.fc1 = nn.Linear(embedding_dim, hidden_dim[0])
         else:
-            self.fc1 = nn.Linear(lora_r * input_dim + embedding_dim, hidden_dim)
+            self.fc1 = nn.Linear(lora_r * input_dim + embedding_dim, hidden_dim[0])
 
         output_dim = input_dim * lora_r if self.hypernet_A_matrix != "generated" else 2 * input_dim * lora_r
 
         if self.large_model:
-            self.fc2 = nn.Linear(hidden_dim, hidden_dim)
-            self.fc3 = nn.Linear(hidden_dim, hidden_dim)
-            self.fc4 = nn.Linear(hidden_dim, output_dim)
+            self.fc2 = nn.Linear(hidden_dim[0], hidden_dim[1])
+            self.fc3 = nn.Linear(hidden_dim[1], hidden_dim[2])
+            self.fc4 = nn.Linear(hidden_dim[2], output_dim)
         else:
-            self.fc2 = nn.Linear(hidden_dim, output_dim)
-
+            self.fc2 = nn.Linear(hidden_dim[0], output_dim)
         if self.use_embedding:
             self.embedding = nn.Embedding(num_of_embeddings, embedding_dim)
         else:
@@ -157,10 +156,12 @@ class LoRAHyperNet(nn.Module):
             Bs = out.view(self.num_of_embeddings, self.lora_r, self.input_dim)
             
         self.A_matrices = [
-            As[i].detach().clone() if not self.hypernet_A_matrix == "generated" else As[i] for i in range(self.num_of_embeddings)
+            As[i].detach().clone() if not self.hypernet_A_matrix == "generated" else As[i].clone()
+            for i in range(self.num_of_embeddings)
         ]
+
         self.B_matrices = [
-            Bs[i] for i in range(self.num_of_embeddings)
+            Bs[i].clone() for i in range(self.num_of_embeddings)
         ]
 
     def use_precomputed(self, layer_id):
@@ -318,12 +319,23 @@ class LoRAHyperNetTransformer(nn.Module):
         out = self.out_proj(h).view(self.num_of_embeddings, self.lora_r, self.input_dim)
 
         if self.hypernet_A_matrix == "generated":
-            self.A_matrices = [out[i].view(self.input_dim, self.lora_r) for i in range(self.num_of_embeddings//2)]
-            self.B_matrices = [out[i] for i in range(self.num_of_embeddings//2, self.num_of_embeddings)]
+            self.A_matrices = [
+                out[i].view(self.input_dim, self.lora_r).clone()  # ✅ clone!
+                for i in range(self.num_of_embeddings//2)
+            ]
+            self.B_matrices = [
+                out[i].clone()  # ✅ clone!
+                for i in range(self.num_of_embeddings//2, self.num_of_embeddings)
+            ]
         else:
-            self.A_matrices = [As[i].detach().clone() for i in range(self.num_of_embeddings)]
-            self.B_matrices = [out[i] for i in range(self.num_of_embeddings)]
-
+            self.A_matrices = [
+                As[i].detach().clone() 
+                for i in range(self.num_of_embeddings)
+            ]
+            self.B_matrices = [
+                out[i].clone()  # ✅ clone!
+                for i in range(self.num_of_embeddings)
+            ]
     def use_precomputed(self, layer_id):
         if self.A_matrices is None or self.B_matrices is None:
             raise RuntimeError(

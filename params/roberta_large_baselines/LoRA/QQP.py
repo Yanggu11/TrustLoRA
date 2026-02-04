@@ -26,7 +26,7 @@ params = {
     "weight_decay": 0.1,
     "per_device_train_batch_size": 4,
     "per_device_eval_batch_size": 8,
-    "gradient_accumulation_steps": 2,
+    "gradient_accumulation_steps": 1,
     "num_train_epochs": 20,
     "metric_for_best_model": "accuracy",
     "warmup_ratio": 0.06,
@@ -35,6 +35,6 @@ params = {
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/qqp",
-    "num_runs": 1,  # we will train this many times with this config, but seeds will be different
+    "num_runs": 3,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }

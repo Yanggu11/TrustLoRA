@@ -22,7 +22,7 @@ params = {
     "hypernet_reduce_noise_alpha": False,
     "hypernet_noise_alpha": 1,
     "hypernet_use_batches": True, # !
-    "hypernet_hidden_dim": 128,
+    "hypernet_hidden_dim": [1024, 512, 256],  # if large_model is True use 3 layers, otherwise use single hidden layer
     "hypernet_embeddings_dim": 128,
     "layers_to_use_hypernet": list(range(12)),
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
@@ -39,11 +39,11 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 4e-4,
+    "learning_rate": 4e-5,
     "weight_decay": 0.1,
-    "per_device_train_batch_size": 16,
+    "per_device_train_batch_size": 32,
     "per_device_eval_batch_size": 32,
-    "gradient_accumulation_steps": 2,
+    "gradient_accumulation_steps": 1,
     "num_train_epochs": 20,
     "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,
@@ -53,5 +53,5 @@ params = {
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/output_dir",
     "num_runs": 1,  # we will train this many times with this config, but seeds will be different
-    "seed": 11,
+    "seed": 12,
 }

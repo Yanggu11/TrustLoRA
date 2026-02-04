@@ -1,6 +1,10 @@
+import json
+import os
+
 import torch
 import torch.nn as nn
-from peft import LoraConfig, PeftModel, TaskType, get_peft_model
+from peft import LoraConfig, PeftModel, TaskType, get_peft_model, set_peft_model_state_dict
+from safetensors.torch import load_file
 from transformers import RobertaForSequenceClassification, RobertaTokenizer
 
 from models.dynamic_lora_layer import DynamicLoRALayer
@@ -17,8 +21,9 @@ def get_baseline_roberta(
     layers_to_transform=list(range(12)),
     layers_pattern="encoder.layer",
     layers_to_freeze=[],
+    num_labels=2,
 ):
-    model = RobertaForSequenceClassification.from_pretrained(model_name)
+    model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     if use_peft and peft_model_name == "":
@@ -35,7 +40,45 @@ def get_baseline_roberta(
         model = get_peft_model(model, peft_config=peft_config)
 
     elif use_peft:
-        model = PeftModel.from_pretrained(model, peft_model_name)
+        adapter_config_path = os.path.join(peft_model_name, "adapter_config.json")
+        if os.path.exists(adapter_config_path):
+            with open(adapter_config_path, 'r') as f:
+                adapter_config = json.load(f)
+            
+            peft_config = LoraConfig(
+                task_type=TaskType.SEQ_CLS,
+                inference_mode=False,
+                r=adapter_config.get("r", 8),
+                lora_alpha=adapter_config.get("lora_alpha", 16),
+                target_modules=adapter_config.get("target_modules", ["query", "value"]),
+                layers_to_transform=adapter_config.get("layers_to_transform", None),
+                layers_pattern=adapter_config.get("layers_pattern", None),
+            )
+            model = get_peft_model(model, peft_config=peft_config)
+            
+            adapter_weights_path = os.path.join(peft_model_name, "adapter_model.safetensors")
+            if os.path.exists(adapter_weights_path):
+                state_dict = load_file(adapter_weights_path)
+            else:
+                adapter_weights_path = os.path.join(peft_model_name, "adapter_model.bin")
+                state_dict = torch.load(adapter_weights_path, map_location='cpu')
+            
+            filtered_state_dict = {}
+            for k, v in state_dict.items():
+                if 'lora_' in k:
+                    if '.lora_A.weight' in k and '.lora_A.default.weight' not in k:
+                        k = k.replace('.lora_A.weight', '.lora_A.default.weight')
+                    elif '.lora_B.weight' in k and '.lora_B.default.weight' not in k:
+                        k = k.replace('.lora_B.weight', '.lora_B.default.weight')
+                    filtered_state_dict[k] = v
+            
+            load_result = model.load_state_dict(filtered_state_dict, strict=False)
+            print(f"Loaded LoRA weights. Missing keys: {len(load_result.missing_keys)}, Unexpected keys: {len(load_result.unexpected_keys)}")
+            if load_result.unexpected_keys:
+                print(f"Unexpected keys: {load_result.unexpected_keys}")
+        else:
+            model = PeftModel.from_pretrained(model, peft_model_name)
+        
         for name, param in model.named_parameters():
             if "lora_" in str(name):
                 param.requires_grad = True
@@ -73,9 +116,10 @@ def get_hypernet_on_last_layer_roberta(
     layers_to_transform=list(range(12)),
     layers_pattern="encoder.layer",
     layers_to_freeze=[],
+    num_labels=2,
 ):
 
-    model = RobertaForSequenceClassification.from_pretrained(model_name)
+    model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     base_hidden_size = model.config.hidden_size
