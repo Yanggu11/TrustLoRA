@@ -74,8 +74,6 @@ def get_baseline_roberta(
             
             load_result = model.load_state_dict(filtered_state_dict, strict=False)
             print(f"Loaded LoRA weights. Missing keys: {len(load_result.missing_keys)}, Unexpected keys: {len(load_result.unexpected_keys)}")
-            if load_result.missing_keys:
-                print(f"Missing keys: {load_result.missing_keys}")
             if load_result.unexpected_keys:
                 print(f"Unexpected keys: {load_result.unexpected_keys}")
         else:
