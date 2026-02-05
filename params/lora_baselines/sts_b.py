@@ -15,7 +15,7 @@ params = {
     "layers_pattern": "encoder.layer",
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
-    "output_dir": f"./pretrained_models/sst_b_baseline",
+    "output_dir": f"./pretrained_models/sts_b_baseline",
     "eval_strategy": "epoch",
     "eval_steps": 50,
     "save_strategy": "steps",
@@ -28,13 +28,13 @@ params = {
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 1,
     "num_train_epochs": 40,
-    "metric_for_best_model": "ece",
+    "metric_for_best_model": "pearson",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
-    "results_dir": "./results/sst_b",
+    "results_dir": "./results/sts_b",
     "num_runs": 3,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }
