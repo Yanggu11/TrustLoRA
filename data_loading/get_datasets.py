@@ -1,5 +1,5 @@
 import evaluate
-from datasets import load_dataset
+from datasets import load_dataset, Value
 
 
 def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
@@ -93,7 +93,11 @@ def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
     metric = evaluate.load("glue", dataset_name)
     
     # Get the number of labels from the dataset
-    num_labels = dataset["train"].features["label"].num_classes
+    label_feature = dataset["train"].features["label"]
+    if isinstance(label_feature, Value):
+        num_labels = 1  # Regression task
+    else:
+        num_labels = label_feature.num_classes
 
     encoded_dataset = dataset.map(tokenize_function, batched=True)
     encoded_dataset = encoded_dataset.rename_column("label", "labels")
