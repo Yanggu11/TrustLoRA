@@ -33,6 +33,6 @@ params = {
     "disable_tqdm": True,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/mrpc",
-    "num_runs": 1,  # we will train this many times with this config, but seeds will be different
+    "num_runs": 3,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }
