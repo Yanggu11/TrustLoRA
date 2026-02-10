@@ -1,7 +1,7 @@
 params = {
     # most important, general params
     "glue_dataset_name": "stsb",
-    "model_name": "roberta-base",
+    "model_name": "./pretrained_models/mnli_baseline_mnli_1770296491/checkpoint-122720",
     "use_hypernet": False,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
     "layers_to_freeze": [],
@@ -28,7 +28,7 @@ params = {
     "per_device_eval_batch_size": 8,
     "gradient_accumulation_steps": 2,
     "num_train_epochs": 10,
-    "metric_for_best_model": "ece",
+    "metric_for_best_model": "pearson",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",

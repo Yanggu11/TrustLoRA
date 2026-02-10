@@ -23,7 +23,7 @@ def get_baseline_roberta(
     layers_to_freeze=[],
     num_labels=2,
 ):
-    model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
+    model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=num_labels, ignore_mismatched_sizes=True)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     if use_peft and peft_model_name == "":
@@ -119,7 +119,7 @@ def get_hypernet_on_last_layer_roberta(
     num_labels=2,
 ):
 
-    model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
+    model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=num_labels, ignore_mismatched_sizes=True)
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     base_hidden_size = model.config.hidden_size
