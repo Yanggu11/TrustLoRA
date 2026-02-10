@@ -44,7 +44,7 @@ params = {
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 2,
     "num_train_epochs": 30,
-    "metric_for_best_model": "matthews_correlation",
+    "metric_for_best_model": "accuracy",
     "warmup_ratio": 0.06,  # TODO Mid
     "lr_scheduler_type": "linear",  # ! Important
     "optim": "adamw_torch",
