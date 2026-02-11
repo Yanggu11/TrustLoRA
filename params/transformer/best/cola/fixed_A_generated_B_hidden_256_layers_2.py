@@ -43,7 +43,7 @@ params = {
     "per_device_train_batch_size": 16,  # TODO Mid
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 2,
-    "num_train_epochs": 30,
+    "num_train_epochs": 80,
     "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,  # TODO Mid
     "lr_scheduler_type": "linear",  # ! Important
