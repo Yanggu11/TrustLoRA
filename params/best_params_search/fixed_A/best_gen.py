@@ -1,6 +1,6 @@
 params = {
     # most important, general params
-    "glue_dataset_name": "rte",
+    "glue_dataset_name": "cola",
     "model_name": "roberta-base",
     "use_hypernet": True,
     # which layeres to freeze (not necessary when using peft lora, since it automatically freezes them)
@@ -28,11 +28,11 @@ params = {
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
     "hypernet_with_embedding_input_only": True,  # if False we concat matrix A and embedding as input to hypernet
     "hypernet_large_model": True,  # if True hypernet has 4 layers, 2 layers otherwise
-    "hypernet_A_matrix": "generated",  # ["random", "fixed", "generated"]
+    "hypernet_A_matrix": "fixed",  # ["random", "fixed", "generated"]
     # in most cases this param is 1, it says how many time in a row we should run forward pass on single batch
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
-    "output_dir": f"./pretrained_models/hy_rte",
+    "output_dir": f"./pretrained_models/hy_cola",
     "eval_strategy": "epoch",
     "eval_steps": 5,
     "save_strategy": "steps",
@@ -44,14 +44,14 @@ params = {
     "per_device_train_batch_size": 32,
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 1,
-    "num_train_epochs": 80,
-    "metric_for_best_model": "ece",
+    "num_train_epochs": 20,
+    "metric_for_best_model": "matthews_correlation",
     "warmup_ratio": 0.06,
     "lr_scheduler_type": "linear",
     "optim": "adamw_torch",
     "disable_tqdm": False,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
-    "results_dir": "./results/hy_rte",
+    "results_dir": "./results/hy_cola",
     "num_runs": 3,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }
