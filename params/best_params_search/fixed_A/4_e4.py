@@ -39,7 +39,7 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 4e-5,
+    "learning_rate": 4e-4,
     "weight_decay": 0.1,
     "per_device_train_batch_size": 32,
     "per_device_eval_batch_size": 32,
@@ -52,6 +52,6 @@ params = {
     "disable_tqdm": False,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/hy_cola",
-    "num_runs": 3,  # we will train this many times with this config, but seeds will be different
+    "num_runs": 1,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }
