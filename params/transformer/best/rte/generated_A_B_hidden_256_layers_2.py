@@ -38,14 +38,14 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 4e-4,  # ! Important
+    "learning_rate": 1e-5,  # ! Important
     "weight_decay": 0.1,  # TODO Mid
-    "per_device_train_batch_size": 16,  # TODO Mid
+    "per_device_train_batch_size": 32,  # TODO Mid
     "per_device_eval_batch_size": 32,
     "gradient_accumulation_steps": 2,
     "num_train_epochs": 80,
     "metric_for_best_model": "accuracy",
-    "warmup_ratio": 0.06,  # TODO Mid
+    "warmup_ratio": 0.1,  # TODO Mid
     "lr_scheduler_type": "linear",  # ! Important
     "optim": "adamw_torch",
     "disable_tqdm": True,
