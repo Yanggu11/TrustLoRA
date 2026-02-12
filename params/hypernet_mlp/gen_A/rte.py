@@ -39,7 +39,7 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 4e-5,
+    "learning_rate": 4e-6,
     "weight_decay": 0.1,
     "per_device_train_batch_size": 32,
     "per_device_eval_batch_size": 32,
