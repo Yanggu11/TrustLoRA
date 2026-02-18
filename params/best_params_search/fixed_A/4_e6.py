@@ -10,7 +10,7 @@ params = {
     "lora_r": 8,
     "lora_alpha": 8,
     "target_modules": ["query", "value"],
-    "layers_to_transform": [11],
+    "layers_to_transform": list(range(12)),
     "layers_pattern": "encoder.layer",
     # hypernet params
     "hypernet_use_embedding": True,  # if False use one-hot encoding
@@ -24,7 +24,7 @@ params = {
     "hypernet_use_batches": True, # !
     "hypernet_hidden_dim": [2048, 2048, 2048],  # if large_model is True use 3 layers, otherwise use single hidden layer
     "hypernet_embeddings_dim": 128,
-    "layers_to_use_hypernet": [11],
+    "layers_to_use_hypernet": list(range(12)),
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
     "hypernet_with_embedding_input_only": True,  # if False we concat matrix A and embedding as input to hypernet
     "hypernet_large_model": True,  # if True hypernet has 4 layers, 2 layers otherwise
@@ -39,7 +39,7 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 4e-5,
+    "learning_rate": 4e-6,
     "weight_decay": 0.1,
     "per_device_train_batch_size": 32,
     "per_device_eval_batch_size": 32,
@@ -52,6 +52,6 @@ params = {
     "disable_tqdm": False,
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/hy_cola",
-    "num_runs": 3,  # we will train this many times with this config, but seeds will be different
+    "num_runs": 1,  # we will train this many times with this config, but seeds will be different
     "seed": 11,
 }

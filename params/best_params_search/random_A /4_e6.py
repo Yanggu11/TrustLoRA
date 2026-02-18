@@ -28,7 +28,7 @@ params = {
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
     "hypernet_with_embedding_input_only": True,  # if False we concat matrix A and embedding as input to hypernet
     "hypernet_large_model": True,  # if True hypernet has 4 layers, 2 layers otherwise
-    "hypernet_A_matrix": "fixed",  # ["random", "fixed", "generated"]
+    "hypernet_A_matrix": "random",  # ["random", "fixed", "generated"]
     # in most cases this param is 1, it says how many time in a row we should run forward pass on single batch
     "forward_pass_reps": 1,
     # transformers trainer args (https://huggingface.co/docs/transformers/v4.56.1/en/main_classes/trainer#transformers.TrainingArguments)
@@ -39,7 +39,7 @@ params = {
     "save_steps": 1000000000,
     "logging_strategy": "epoch",
     "logging_steps": 50,
-    "learning_rate": 4e-4,
+    "learning_rate": 4e-6,
     "weight_decay": 0.1,
     "per_device_train_batch_size": 32,
     "per_device_eval_batch_size": 32,
