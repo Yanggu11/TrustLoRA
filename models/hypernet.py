@@ -200,7 +200,7 @@ class LoRAHyperNetTransformer(nn.Module):
         self.embedding_input_only = embedding_input_only
         self.use_embedding = use_embedding
 
-        self.activation = nn.GELU()
+        # self.activation = nn.GELU()
 
         assert not (not self.embedding_input_only and self.hypernet_A_matrix == "generated"), (
             "Cannot use A as input with generated A matrix."
