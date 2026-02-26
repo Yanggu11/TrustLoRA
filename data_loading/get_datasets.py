@@ -1,5 +1,5 @@
 import evaluate
-from datasets import load_dataset, Value
+from datasets import Value, load_dataset
 
 
 def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
@@ -91,7 +91,7 @@ def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
 
     dataset = load_dataset("glue", dataset_name)
     metric = evaluate.load("glue", dataset_name)
-    
+
     # Get the number of labels from the dataset
     label_feature = dataset["train"].features["label"]
     if isinstance(label_feature, Value):
@@ -101,13 +101,13 @@ def get_glue_dataset(dataset_name, tokenizer, truncation=True, max_length=512):
 
     encoded_dataset = dataset.map(tokenize_function, batched=True)
     encoded_dataset = encoded_dataset.rename_column("label", "labels")
-    
+
     # MNLI has validation_matched and validation_mismatched instead of validation
     # Rename validation_matched to validation for consistency with other tasks
     if dataset_name.lower() == "mnli":
         if "validation_matched" in encoded_dataset:
             encoded_dataset["validation"] = encoded_dataset["validation_matched"]
-    
+
     encoded_dataset.set_format(
         "torch", columns=["input_ids", "attention_mask", "labels"]
     )

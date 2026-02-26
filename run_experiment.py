@@ -7,9 +7,21 @@ import time
 import numpy as np
 import torch
 import wandb
-from transformers import RobertaTokenizer, Trainer, TrainingArguments, enable_full_determinism
+from transformers import (
+    RobertaTokenizer,
+    Trainer,
+    TrainingArguments,
+    enable_full_determinism,
+)
 
-from calibration_metrics import ece, classwise_ece, mce, ace, thresholded_ace, brier_score
+from calibration_metrics import (
+    ece,
+    classwise_ece,
+    mce,
+    ace,
+    thresholded_ace,
+    brier_score,
+)
 from data_loading.get_datasets import get_glue_dataset
 from models.get_roberta import get_baseline_roberta, get_hypernet_on_last_layer_roberta
 from utils.alpha_callback import ReduceAlphaCallback
@@ -65,7 +77,10 @@ def run_experiment(params, id, device="cpu"):
     # First, get num_labels from the dataset by loading it with a temporary tokenizer
     temp_tokenizer = RobertaTokenizer.from_pretrained(params["model_name"])
     encoded_dataset, metric, num_labels = get_glue_dataset(
-        params["glue_dataset_name"], temp_tokenizer, truncation=True, max_length=params.get("max_length", 512)
+        params["glue_dataset_name"],
+        temp_tokenizer,
+        truncation=True,
+        max_length=params.get("max_length", 512),
     )
     del temp_tokenizer  # Clean up temporary tokenizer
 
@@ -159,7 +174,10 @@ def run_experiment(params, id, device="cpu"):
 
     # Re-tokenize the dataset with the actual model's tokenizer
     encoded_dataset, metric, _ = get_glue_dataset(
-        params["glue_dataset_name"], tokenizer, truncation=True, max_length=params.get("max_length", 512)
+        params["glue_dataset_name"],
+        tokenizer,
+        truncation=True,
+        max_length=params.get("max_length", 512),
     )
 
     def compute_metrics(eval_pred):
@@ -176,9 +194,15 @@ def run_experiment(params, id, device="cpu"):
             results["classwise_ece"] = classwise_ece(probs, labels)
             results["mce"] = mce(probs, labels)
             results["ace"] = ace(probs, labels)
-            results["thresholded_ace_01"] = thresholded_ace(probs, labels, threshold=0.01)
-            results["thresholded_ace_001"] = thresholded_ace(probs, labels, threshold=0.001)
-            results["thresholded_ace_0001"] = thresholded_ace(probs, labels, threshold=0.0001)
+            results["thresholded_ace_01"] = thresholded_ace(
+                probs, labels, threshold=0.01
+            )
+            results["thresholded_ace_001"] = thresholded_ace(
+                probs, labels, threshold=0.001
+            )
+            results["thresholded_ace_0001"] = thresholded_ace(
+                probs, labels, threshold=0.0001
+            )
             results["brier_score"] = brier_score(probs, labels)
         if params["use_hypernet"]:
             results["hyper_B_std"] = compute_B_std(hypernet, device=device)

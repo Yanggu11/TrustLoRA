@@ -14,15 +14,19 @@ params = {
     "layers_pattern": "encoder.layer",
     # hypernet params
     "hypernet_use_embedding": True,  # if False use one-hot encoding
-    "hypernet_use_transformer": False, # !
+    "hypernet_use_transformer": False,  # !
     "hypernet_transformer_nhead": 8,
     "hypernet_transformer_num_layers": 2,
     "hypernet_noise_type_A": "replace",  # "replace", "add", "multiply"
     "hypernet_noise_type_B": "replace",  # "replace", "add", "multiply"
     "hypernet_reduce_noise_alpha": False,
     "hypernet_noise_alpha": 1,
-    "hypernet_use_batches": True, # !
-    "hypernet_hidden_dim": [2048, 2048, 2048],  # if large_model is True use 3 layers, otherwise use single hidden layer
+    "hypernet_use_batches": True,  # !
+    "hypernet_hidden_dim": [
+        2048,
+        2048,
+        2048,
+    ],  # if large_model is True use 3 layers, otherwise use single hidden layer
     "hypernet_embeddings_dim": 128,
     "layers_to_use_hypernet": list(range(12)),
     "hypernet_use_on_value_matrix": True,  # by default we apply lora only on query matrix if this is set to False
