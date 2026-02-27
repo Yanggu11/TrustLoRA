@@ -3,7 +3,7 @@
 > **Bartosz Trojan & Filip Gębala** — Upper-Secondary Schools of Communications in Cracow
 
 
-![teaser.png](teaser.png)  
+![teaser.png](teaser.png)
 
 ## Abstract
 
