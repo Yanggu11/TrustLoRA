@@ -35,5 +35,5 @@ params = {
     # filenames are being generated based on this filename and timestep to avoid overwriting previous results
     "results_dir": "./results/cola",
     "num_runs": 3,  # we will train this many times with this config, but seeds will be different
-    "seed": 11,
+    "seed": 42,
 }
