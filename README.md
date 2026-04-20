@@ -1,7 +1,6 @@
-# HypeLoRA: Hypernetwork-Generated LoRA Adapters for Calibrated Language Model Fine-Tuning
+# TrustLoRA: Enhancing Language Model Calibration via Hyper-Network Driven Low-Rank Adaptation
 
-> **Bartosz Trojan & Filip Gębala** — Upper-Secondary Schools of Communications in Cracow
-
+> **Yansong Fan & Zhihao Xiao** — Beihang University
 
 ![teaser.png](teaser.png)
 
@@ -198,21 +197,9 @@ Metrics are also saved locally as CSV files in `results/` for offline analysis.
 
 ---
 
-## Citation
-
-If you use this code, please cite:
-
-```bibtex
-@inproceedings{trojan2026hypelora,
-  title     = {HypeLoRA: Hypernetwork-Generated LoRA Adapters for Calibrated Language Model Fine-Tuning},
-  author    = {Trojan, Bartosz and Gębala, Filip},
-  booktitle = {Proceedings of LNCS},
-  year      = {2026}
-}
-```
-
 ## Acknowledgements
 
 The authors thank Dr. Kamil Książek, Dr. Tomasz Kuśmierczyk, and Prof. Jacek Tabor of the Jagiellonian University for their guidance and support throughout this work.
 
 ---
+
