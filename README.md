@@ -1,4 +1,4 @@
-# TrustLoRA: Enhancing Language Model Calibration via Hyper-Network Driven Low-Rank Adaptation
+# TrustLoRA: Hyper-Network Driven Language Model Calibration
 
 > **Yansong Fan & Zhihao Xiao** — Beihang University
 
