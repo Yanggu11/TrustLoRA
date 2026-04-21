@@ -1,82 +1,82 @@
-# TrustLoRA: Hyper-Network Driven Language Model Calibration
+# TrustLoRA: 基于超网络的语言模型校准
 
-> **Yansong Fan & Zhihao Xiao** — Beihang University
+> **范彦松 & 肖智豪** — 北京航空航天大学
 
 ![teaser.png](teaser.png)
 
-## Abstract
+## 摘要
 
-Modern Transformer-based models frequently suffer from miscalibration, producing overconfident predictions that do not reflect true empirical frequencies. This work investigates the calibration dynamics of LoRA (Low-Rank Adaptation) and a novel hypernetwork-based adaptation framework as parameter-efficient alternatives to full fine-tuning for RoBERTa. Evaluating across the GLUE benchmark, we demonstrate that LoRA-based adaptation consistently achieves calibration parity with — and in specific tasks exceeds — full fine-tuning, while maintaining significantly higher parameter efficiency. We further explore a dynamic approach where a shared hypernetwork generates LoRA factors (A and B) to induce structural coupling across layers. Our results reveal a critical trade-off: constraining the adaptation space (e.g., freezing matrix A) acts as a powerful regularizer that enhances ECE, but necessitates a carefully balanced sacrifice in downstream task accuracy.
-
----
-
-## Overview
-
-Standard LoRA adapters are static — once trained, each layer uses a fixed pair of low-rank matrices **A** and **B**. This project replaces the per-layer static **B** matrix (and optionally **A**) with the output of a compact shared **hypernetwork** (`LoRAHyperNet`). The hypernetwork conditions on a learned embedding for each transformer layer and generates coordinated adapter weights across all layers in a single forward pass, while all backbone parameters remain frozen.
-
-### Key ideas
-
-- **Dynamic weight generation** — adapter weights are produced on every forward pass by the hypernetwork, enabling parameter sharing across layers and reducing total adapter parameter count.
-- **Two hypernetwork architectures** — a 4-layer MLP (hidden size 2048, GELU) or a 2-layer Transformer encoder (256-dim, 16 heads), both conditioning on 128-dim learned layer embeddings.
-- **Fixed-A vs. generated-A variants** — matrix A can be frozen (Kaiming uniform init) while only B is generated, which acts as a regularizer improving calibration at some cost to task performance.
-- **Noise blending** — generated matrices can be mixed with the initial random matrices via `add` / `multiply` / `replace` modes; the blending coefficient `noise_alpha` is linearly annealed to 0 during training.
-- **Calibration-aware evaluation** — every evaluation step computes ECE, Classwise-ECE, MCE, ACE, Thresholded ACE, and Brier Score alongside the GLUE task metric.
+基于Transformer的现代模型经常遭受校准偏差的影响，产生过于自信的预测，这些预测不能反映真实的经验频率。本研究探讨了LoRA（低秩适应）和一种新颖的超网络基自适应框架在RoBERTa参数高效替代全量微调方面的校准动态。通过在GLUE基准测试中评估，我们证明基于LoRA的适应在所有任务中都能实现与全量微调相当的校准性能——在某些特定任务中甚至超过全量微调，同时保持显著更高的参数效率。我们进一步探索了一种动态方法，其中共享超网络生成LoRA因子（A和B），以在所有层之间诱导结构耦合。我们的研究揭示了一个关键权衡：约束适应空间（例如，冻结矩阵A）作为强大的正则化器能够提升ECE指标，但需要在下游任务准确性方面进行精心平衡的牺牲。
 
 ---
 
-## Key Findings
+## 概述
 
-1. **LoRA ≈ Full Fine-Tuning in calibration** — LoRA provides calibration comparable to full fine-tuning across most GLUE tasks while being significantly more parameter-efficient.
+标准的LoRA适配器是静态的——一旦训练完成，每个层都使用一对固定的低秩矩阵**A**和**B**。本项目将每层的静态**B**矩阵（以及可选的**A**矩阵）替换为由紧凑共享**超网络**（`LoRAHyperNet`）生成的输出。该超网络以每个Transformer层的学得嵌入为条件，并在单次前向传播中生成跨所有层的协调适配器权重，而所有主干参数保持冻结状态。
 
-2. **Hypernetwork does not universally improve calibration** — fully generating both A and B via the hypernetwork yields metrics broadly similar to standard LoRA, suggesting that structural coupling across layers alone does not produce systematic confidence correction.
+### 核心思想
 
-3. **Fixing matrix A regularizes the model** — freezing A while generating only B introduces a structured perturbation that modestly lowers ECE. The trade-off is a consistent drop in task performance (MCC on CoLA, accuracy on SST-2).
-
-4. **Extended training degrades calibration** — across all methods, longer training progressively overfits the distribution and erodes uncertainty estimates.
+- **动态权重生成** — 适配器权重由超网络在每个前向传播中生成，实现了跨层的参数共享并减少了总的适配器参数数量。
+- **两种超网络架构** — 4层MLP（隐藏层大小2048，GELU激活函数）或2层Transformer编码器（256维，16个注意力头），两者都以128维学得层嵌入为条件。
+- **固定-A vs. 生成-A变体** — 矩阵A可以固定（Kaiming均匀初始化），仅生成B矩阵，这充当正则化器改善校准性能，但会牺牲一定的任务表现。
+- **噪声混合** — 生成的矩阵可以通过`add` / `multiply` / `replace`模式与初始随机矩阵混合；混合系数`noise_alpha`在训练过程中线性退火至0。
+- **校准感知评估** — 每次评估步骤都会计算ECE、类间ECE、MCE、ACE、阈值ACE和Brier分数，同时还包括GLUE任务指标。
 
 ---
 
-## Project Structure
+## 主要发现
+
+1. **LoRA ≈ 全量微调在校准方面** — LoRA在各种GLUE任务中提供与全量微调相当的可比校准性能，同时在参数效率上显著优于全量微调。
+
+2. **超网络并非普遍改善校准** — 通过超网络完全生成A和B矩阵得到的指标与标准LoRA大致相似，这表明仅靠跨层结构耦合不会产生系统性的置信度校正。
+
+3. **固定矩阵A对模型起正则化作用** — 在生成B矩阵的同时冻结A矩阵会引入结构化扰动，适度降低ECE指标。这种方法的代价是在任务性能上的持续下降（CoLA的MCC、SST-2的准确率）。
+
+4. **延长训练会恶化校准** — 在所有方法中，更长的训练时间会渐进式地过拟合分布并削弱不确定性估计。
+
+---
+
+## 项目结构
 
 ```
 .
-├── run_experiment.py               # Main training entry point
+├── run_experiment.py               # 主要训练入口点
 ├── calibration_metrics.py          # ECE, CECE, MCE, ACE, TACE, Brier Score
 ├── requirements.txt
 │
 ├── models/
 │   ├── hypernet.py                 # LoRAHyperNet (MLP) & LoRAHyperNetTransformer
-│   ├── dynamic_lora_layer.py       # DynamicLoRALayer – applies hypernet output as LoRA
-│   └── get_roberta.py              # Model builders (baseline & hypernet variants)
+│   ├── dynamic_lora_layer.py       # DynamicLoRALayer – 应用超网络输出作为LoRA
+│   └── get_roberta.py              # 模型构建器（基线 & 超网络变体）
 │
 ├── data_loading/
-│   └── get_datasets.py             # GLUE dataset loading & tokenization
+│   └── get_datasets.py             # GLUE数据集加载和分词
 │
 ├── utils/
-│   ├── alpha_callback.py           # Linearly anneals noise_alpha during training
-│   ├── batch_generation_trainer.py # Custom Trainer: pre-generates B matrices per batch
-│   ├── forward_pass_repetition_data_collator.py  # Gradient accumulation via repeated passes
-│   ├── lr_scheduler_callback.py    # LR schedule utilities
-│   ├── metrics.py                  # B-matrix statistics (mean / std across layers)
-│   ├── metrics_trainer_callback.py # Saves per-epoch metrics to CSV
-│   └── one_hot_encoding.py         # One-hot encoder (alternative to learned embeddings)
+│   ├── alpha_callback.py           # 在训练过程中线性退火noise_alpha
+│   ├── batch_generation_trainer.py # 自定义Trainer：每批预生成B矩阵
+│   ├── forward_pass_repetition_data_collator.py  # 通过重复前向传播实现梯度累积
+│   ├── lr_scheduler_callback.py    # LR调度工具
+│   ├── metrics.py                  # B矩阵统计信息（跨层的均值/标准差）
+│   ├── metrics_trainer_callback.py # 保存每轮指标的CSV文件
+│   └── one_hot_encoding.py         # 独热编码（学得嵌入的替代方案）
 │
 ├── params/
-│   ├── example_config_hypernet.py  # Template config — hypernet mode
-│   ├── example_config_no_hypernet.py # Template config — LoRA / FT baseline
-│   ├── ft_baselines/               # Full fine-tuning configs per GLUE task
-│   ├── lora_baselines/             # LoRA baseline configs per GLUE task
-│   ├── hypernet_mlp/               # MLP hypernet experiments (fixed_A / gen_A)
-│   ├── transformer/                # Transformer hypernet experiments
-│   └── roberta_large_baselines/    # RoBERTa-large FT & LoRA configs
+│   ├── example_config_hypernet.py  # 模板配置 — 超网络模式
+│   ├── example_config_no_hypernet.py # 模板配置 — LoRA / FT基线
+│   ├── ft_baselines/               # 每个GLUE任务的完整微调配置
+│   ├── lora_baselines/             # 每个GLUE任务的LoRA基线配置
+│   ├── hypernet_mlp/               # MLP超网络实验（fixed_A / gen_A）
+│   ├── transformer/                # Transformer超网络实验
+│   └── roberta_large_baselines/    # RoBERTa-large FT & LoRA配置
 │
-├── pretrained_models/              # Saved checkpoints
-└── results/                        # CSV metric logs per run
+├── pretrained_models/              # 保存的检查点
+└── results/                        # 每次运行的CSV指标日志
 ```
 
 ---
 
-## Installation
+## 安装
 
 ```bash
 python -m venv venv
@@ -88,118 +88,109 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**Requirements:** Python ≥ 3.9, PyTorch, Transformers, PEFT, Datasets, WandB, scikit-learn, accelerate.
+**要求:** Python ≥ 3.9, PyTorch, Transformers, PEFT, Datasets, WandB, scikit-learn, accelerate。
 
 ---
 
-## Running Experiments
+## 运行实验
 
-All experiments are driven by a single entry point that takes a Python config file:
+所有实验都由单个入口点驱动，该入口点接受Python配置文件：
 
 ```bash
 python run_experiment.py --params <path/to/config.py>
 ```
 
-The script loads the dataset, builds the model, runs `num_runs` independent seeds, logs to **WandB**, and saves metrics to `results/`.
+脚本加载数据集，构建模型，运行`num_runs`次独立种子实验，记录到**WandB**并将指标保存到`results/`目录。
 
-### Baselines
+### 基线实验
 
 ```bash
-# Full fine-tuning
+# 完整微调
 python run_experiment.py --params params/ft_baselines/cola.py
 
-# LoRA baseline
+# LoRA基线
 python run_experiment.py --params params/lora_baselines/cola.py
 ```
 
-### Hypernetwork experiments
+### 超网络实验
 
 ```bash
-# MLP hypernet, fixed A matrix
+# MLP超网络，固定A矩阵
 python run_experiment.py --params params/hypernet_mlp/fixed_A/cola.py
 
-# MLP hypernet, generated A matrix
+# MLP超网络，生成A矩阵
 python run_experiment.py --params params/hypernet_mlp/gen_A/cola.py
 
-# Transformer hypernet
+# Transformer超网络
 python run_experiment.py --params params/transformer/fixed_A/cola.py
 ```
 
 ---
 
-## Configuration Reference
+## 配置参考
 
-Config files are plain Python dicts assigned to a `params` variable. Key parameters:
+配置文件是分配给`params`变量的普通Python字典。关键参数：
 
-| Parameter | Description |
+| 参数 | 描述 |
 |---|---|
-| `glue_dataset_name` | GLUE task: `cola`, `sst2`, `mrpc`, `qqp`, `mnli`, `qnli`, `rte`, `stsb` |
-| `model_name` | HuggingFace model ID or local checkpoint path |
-| `use_hypernet` | `True` to use dynamic LoRA via hypernetwork; `False` for baseline |
-| `use_peft` | Wrap model with PEFT LoRA config |
-| `lora_r` | LoRA rank (default: 8) |
-| `lora_alpha` | LoRA scaling factor |
-| `layers_to_transform` | Encoder layers to apply LoRA to (default: all 12) |
-| `layers_to_use_hypernet` | Subset of layers whose LoRA weights are generated by the hypernet |
-| `hypernet_use_transformer` | `True` for Transformer hypernet; `False` for MLP |
-| `hypernet_transformer_nhead` | Number of attention heads (Transformer hypernet) |
-| `hypernet_transformer_num_layers` | Number of Transformer layers in hypernet |
-| `hypernet_hidden_dim` | Hidden dimension of the MLP hypernet |
-| `hypernet_embeddings_dim` | Dimension of the learned layer embedding (default: 128) |
-| `hypernet_A_matrix` | How matrix A is handled: `"random"`, `"fixed"`, or `"generated"` |
-| `hypernet_noise_type_A/B` | Blending mode for A/B: `"replace"`, `"add"`, `"multiply"` |
-| `hypernet_noise_alpha` | Initial blending weight; annealed to 0 when `hypernet_reduce_noise_alpha=True` |
-| `hypernet_large_model` | `True` for 4-layer MLP; `False` for 2-layer |
-| `hypernet_use_batches` | Pre-generate B matrices once per batch |
-| `forward_pass_reps` | Repeat forward pass N times per batch |
-| `num_runs` | Number of independent runs (different seeds) |
+| `glue_dataset_name` | GLUE任务：`cola`, `sst2`, `mrpc`, `qqp`, `mnli`, `qnli`, `rte`, `stsb` |
+| `model_name` | HuggingFace模型ID或本地检查点路径 |
+| `use_hypernet` | `True`表示使用通过超网络的动态LoRA；`False`表示基线模式 |
+| `use_peft` | 用PEFT LoRA配置包装模型 |
+| `lora_r` | LoRA秩（默认值：8） |
+| `lora_alpha` | LoRA缩放因子 |
+| `layers_to_transform` | 应用LoRA的编码器层（默认值：全部12层） |
+| `layers_to_use_hypernet` | 由其LoRA权重由超网络生成的层子集 |
+| `hypernet_use_transformer` | `True`表示Transformer超网络；`False`表示MLP |
+| `hypernet_transformer_nhead` | 注意力头数（Transformer超网络） |
+| `hypernet_transformer_num_layers` | 超网络中Transformer层数 |
+| `hypernet_hidden_dim` | MLP超网络的隐藏层维度 |
+| `hypernet_embeddings_dim` | 学得层嵌入的维度（默认值：128） |
+| `hypernet_A_matrix` | A矩阵的处理方式：`"random"`、`"fixed"`或`"generated"` |
+| `hypernet_noise_type_A/B` | A/B的混合模式：`"replace"`、`"add"`、`"multiply"` |
+| `hypernet_noise_alpha` | 初始混合权重；当`hypernet_reduce_noise_alpha=True`时退火至0 |
+| `hypernet_large_model` | `True`表示4层MLP；`False`表示2层MLP |
+| `hypernet_use_batches` | 每批一次预生成B矩阵 |
+| `forward_pass_reps` | 每批重复前向传播N次 |
+| `num_runs` | 独立运行次数（不同种子） |
 
 ---
 
-## Calibration Metrics
+## 校准指标
 
-After each evaluation step the following metrics are computed and logged to WandB and the results CSV:
+每次评估步骤都会计算以下指标并记录到WandB和结果CSV文件中：
 
-| Metric | Formula / Description |
+| 指标 | 公式/描述 |
 |---|---|
-| **ECE** | Weighted mean of per-bin \|accuracy − confidence\| gaps |
-| **Classwise ECE (CECE)** | ECE computed per class, averaged over all classes |
-| **MCE** | Maximum per-bin calibration error (worst-case bin) |
-| **ACE** | ECE with equal-population bins, averaged per class |
-| **TACE** | ACE restricted to predictions above a confidence threshold ε ∈ {0.01, 0.001, 0.0001} |
-| **Brier Score** | Mean squared error between predicted probability vector and one-hot label |
+| **ECE** | 每个bin的\|accuracy − confidence\|差距的加权平均值 |
+| **类间ECE (CECE)** | 按类别计算的ECE，对所有类别取平均 |
+| **MCE** | 每个bin的最大校准误差（最坏情况bin） |
+| **ACE** | 等人口bin的ECE，按类别取平均 |
+| **TACE** | 限制于置信度阈值ε ∈ {0.01, 0.001, 0.0001}以上的ACE |
+| **Brier分数** | 预测概率向量与独热标签之间的均方误差 |
 
 ---
 
-## Experiment Tracking
+## 实验跟踪
 
-All runs are logged to [Weights & Biases](https://wandb.ai). Each run is tagged with:
-- `hypernet` or `baseline`
-- GLUE dataset name
-- Run index
+所有运行都记录到[Weights & Biases](https://wandb.ai)。每次运行都被标记为：
+- `hypernet`或`baseline`
+- GLUE数据集名称
+- 运行索引
 
-Metrics are also saved locally as CSV files in `results/` for offline analysis.
+指标也会作为CSV文件本地保存在`results/`目录中用于离线分析。
 
 ---
 
-## Supported GLUE Tasks
+## 支持的GLUE任务
 
-| Task | Metric |
+| 任务 | 指标 |
 |---|---|
-| CoLA | Matthews Correlation (MCC) |
-| SST-2 | Accuracy |
-| MRPC | F1 |
-| QQP | F1 / Accuracy |
-| MNLI | Accuracy |
-| QNLI | Accuracy |
-| RTE | Accuracy |
-| STS-B | Pearson / Spearman correlation |
-
----
-
-## Acknowledgements
-
-The authors thank Dr. Kamil Książek, Dr. Tomasz Kuśmierczyk, and Prof. Jacek Tabor of the Jagiellonian University for their guidance and support throughout this work.
-
----
-
+| CoLA | Matthews相关系数(MCC) |
+| SST-2 | 准确率 |
+| MRPC | F1分数 |
+| QQP | F1分数/准确率 |
+| MNLI | 准确率 |
+| QNLI | 准确率 |
+| RTE | 准确率 |
+| STS-B | Pearson/Spearman相关系数 |
